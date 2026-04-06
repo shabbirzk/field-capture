@@ -496,13 +496,21 @@ async function runOCR(dataUrl, apiKey) {
   const base64 = dataUrl.split(',')[1];
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
-    headers:{ 'Content-Type':'application/json', 'x-api-key':apiKey, 'anthropic-version':'2023-06-01' },
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':apiKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
     body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{ role:'user', content:[
       { type:'image', source:{ type:'base64', media_type:'image/jpeg', data:base64 } },
       { type:'text', text:'Extract ALL visible text from this image exactly as it appears. Return only the raw extracted text with no commentary.' }
     ]}]})
   });
-  if (!resp.ok) throw new Error('OCR API error: '+resp.status);
+  if (!resp.ok) {
+    const errData = await resp.json().catch(()=>({}));
+    throw new Error('OCR failed: ' + (errData.error?.message || resp.status));
+  }
   const data = await resp.json();
   return data.content?.map(c=>c.text||'').join('')||'(no text found)';
 }
@@ -547,10 +555,14 @@ async function handleSubmit() {
   const filename = `capture_${Date.now()}.jpg`;
   try {
     stepActive(1);
-    if (apiKey) { ocrText = await runOCR(capturedDataUrl, apiKey); document.getElementById('ocrBox').textContent = ocrText; document.getElementById('ocrResult').classList.add('show'); }
-    else ocrText = '(OCR skipped — no API key)';
+    try {
+      if (apiKey) { ocrText = await runOCR(capturedDataUrl, apiKey); document.getElementById('ocrBox').textContent = ocrText; document.getElementById('ocrResult').classList.add('show'); }
+      else ocrText = '(OCR skipped — no API key)';
+    } catch(ocrErr) { ocrText = '(OCR failed: '+ocrErr.message+')'; toast('OCR step failed: '+ocrErr.message, 'error', 5000); }
     stepActive(2);
-    driveUrl = curMs ? await uploadOneDrive(capturedBlob, filename, folderPath, curMs) : '(not signed in to Microsoft)';
+    try {
+      driveUrl = curMs ? await uploadOneDrive(capturedBlob, filename, folderPath, curMs) : '(not signed in to Microsoft)';
+    } catch(msErr) { driveUrl = '(OneDrive failed: '+msErr.message+')'; toast('OneDrive step failed: '+msErr.message, 'error', 5000); }
     stepActive(3);
     const row = [ document.getElementById('fDateTime').value, document.getElementById('fQty').value, document.getElementById('fZone').value, document.getElementById('fSupplier').value, selectedStatus, document.getElementById('fRemarks').value, ocrText, driveUrl, filename ];
     if (curGs && sheetsId) await appendSheets(row, sheetsId, curGs);
