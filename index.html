@@ -246,6 +246,7 @@
       <div class="client-id-section">
         <div class="client-id-label">OAuth Client IDs (one-time setup)</div>
         <div class="field"><label>Azure Application (Client) ID</label><input type="text" id="cfMsClientId" placeholder="From Azure App Registration"></div>
+        <div class="field"><label>Microsoft account type</label><select id="cfMsTenant" style="width:100%;padding:10px 12px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;appearance:none;"><option value="consumers">Personal account (Outlook, Hotmail, Live)</option><option value="organizations">Work or school account (Microsoft 365)</option></select></div>
         <div class="field"><label>Google OAuth Client ID</label><input type="text" id="cfGsClientId" placeholder="From Google Cloud Console"></div>
       </div>
 
@@ -321,8 +322,10 @@ function signInMicrosoft() {
   const clientId = document.getElementById('cfMsClientId').value.trim() || localStorage.getItem('fc_ms_client_id');
   if (!clientId) { toast('Please enter your Azure Client ID in App settings first.', 'error', 4000); openConfig(); return; }
   localStorage.setItem('fc_ms_client_id', clientId);
+  const tenant = document.getElementById('cfMsTenant')?.value || localStorage.getItem('fc_ms_tenant') || 'consumers';
+  localStorage.setItem('fc_ms_tenant', tenant);
   const params = new URLSearchParams({ client_id:clientId, response_type:'token', redirect_uri:REDIRECT_URI, scope:'Files.ReadWrite User.Read', response_mode:'fragment', state:'ms' });
-  window.location.href = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${params}`;
+  window.location.href = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?${params}`;
 }
 
 function signOutMicrosoft() {
@@ -398,7 +401,7 @@ function updateAuthUI() {
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
-const SFIELDS = ['cfOneDrivePath','cfSheetsId','cfApiKey','cfMsClientId','cfGsClientId'];
+const SFIELDS = ['cfOneDrivePath','cfSheetsId','cfApiKey','cfMsClientId','cfMsTenant','cfGsClientId'];
 function saveSettings() {
   const s = {};
   SFIELDS.forEach(id => { s[id] = document.getElementById(id).value; });
