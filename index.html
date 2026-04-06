@@ -8,220 +8,118 @@
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
   :root {
-    --bg: #f4f3ef;
-    --surface: #ffffff;
-    --border: rgba(0,0,0,0.08);
-    --border-strong: rgba(0,0,0,0.15);
-    --text: #1a1916;
-    --muted: #6b6a66;
-    --hint: #aeada8;
-    --accent: #1a6b4a;
-    --accent-light: #e8f4ef;
-    --accent-muted: #5a9e80;
-    --danger: #c0392b;
-    --danger-light: #fdf0ee;
-    --warn: #b45309;
-    --warn-light: #fef3e2;
-    --success: #166534;
-    --success-light: #dcfce7;
-    --radius: 14px;
-    --radius-sm: 8px;
+    --bg: #f4f3ef; --surface: #ffffff;
+    --border: rgba(0,0,0,0.08); --border-strong: rgba(0,0,0,0.15);
+    --text: #1a1916; --muted: #6b6a66; --hint: #aeada8;
+    --accent: #1a6b4a; --accent-muted: #5a9e80;
+    --danger: #c0392b; --danger-light: #fdf0ee;
+    --warn: #b45309; --warn-light: #fef3e2;
+    --success: #166534; --success-light: #dcfce7;
+    --radius: 14px; --radius-sm: 8px;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 2rem; }
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding-bottom: 2rem;
-  }
-
+  /* Header */
   .app-header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
   }
-
-  .logo-mark {
-    width: 36px; height: 36px;
-    background: var(--accent);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo-mark { width: 36px; height: 36px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
   .logo-mark svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
   .header-text h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
-  .header-text p { font-size: 12px; color: var(--muted); font-weight: 400; }
+  .header-text p { font-size: 12px; color: var(--muted); }
+  .auth-dots { display: flex; gap: 5px; align-items: center; }
+  .auth-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); transition: background 0.3s; }
+  .auth-dot.connected { background: var(--accent); }
+  .auth-dot-label { font-size: 10px; color: var(--hint); margin-top: 3px; text-align: right; }
 
+  /* Container & card */
   .container { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; margin-bottom: 12px; }
+  .card-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; color: var(--hint); text-transform: uppercase; margin-bottom: 12px; }
 
-  .card {
-    background: var(--surface);
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    padding: 16px;
-    margin-bottom: 12px;
-  }
+  /* Setup banner */
+  .setup-banner { background: var(--warn-light); border: 1px solid rgba(180,83,9,0.2); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px; font-size: 12px; color: var(--warn); line-height: 1.5; display: none; }
+  .setup-banner.show { display: block; }
 
-  .card-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    color: var(--hint);
-    text-transform: uppercase;
-    margin-bottom: 12px;
+  /* Sign-in buttons */
+  .auth-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .auth-row:last-child { margin-bottom: 0; }
+  .signin-btn {
+    flex: 1; padding: 11px 10px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong); background: var(--surface);
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s;
   }
+  .signin-btn:active { transform: scale(0.97); }
+  .signin-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .signin-btn.ms { border-color: rgba(0,120,212,0.3); }
+  .signin-btn.google { border-color: rgba(234,67,53,0.3); }
+  .signin-btn.connected { background: var(--success-light); color: var(--success); border-color: rgba(22,101,52,0.3); pointer-events: none; }
+  .signin-btn.signout { flex: 0 0 auto; padding: 11px 14px; font-size: 12px; color: var(--muted); pointer-events: all; cursor: pointer; }
 
   /* Camera */
-  .camera-area {
-    width: 100%;
-    aspect-ratio: 4/3;
-    background: var(--bg);
-    border-radius: var(--radius-sm);
-    border: 1.5px dashed var(--border-strong);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    position: relative; overflow: hidden;
-    cursor: pointer;
-  }
-
-  .camera-area video,
-  .camera-area img.preview {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-  }
-
-  .cam-placeholder {
-    display: flex; flex-direction: column;
-    align-items: center; gap: 8px;
-    color: var(--hint);
-    pointer-events: none;
-    z-index: 1;
-  }
+  .camera-area { width: 100%; aspect-ratio: 4/3; background: var(--bg); border-radius: var(--radius-sm); border: 1.5px dashed var(--border-strong); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: pointer; }
+  .camera-area video, .camera-area img.preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm); }
+  .cam-placeholder { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--hint); pointer-events: none; z-index: 1; }
   .cam-placeholder svg { width: 36px; height: 36px; stroke: var(--hint); fill: none; stroke-width: 1.5; stroke-linecap: round; }
   .cam-placeholder span { font-size: 13px; font-weight: 500; }
-
   .cam-btns { display: flex; gap: 8px; margin-top: 10px; }
 
-  .btn {
-    flex: 1;
-    padding: 11px 12px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border-strong);
-    background: var(--surface);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    text-align: center;
-    transition: background 0.15s, transform 0.1s;
-  }
+  /* Buttons */
+  .btn { flex: 1; padding: 11px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; text-align: center; transition: background 0.15s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 5px; }
   .btn:active { transform: scale(0.97); }
+  .btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
   .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   .btn.danger { background: var(--danger-light); color: var(--danger); border-color: rgba(192,57,43,0.2); }
-  .btn.upload-label { display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .btn.upload-label { cursor: pointer; }
   .btn.upload-label input { display: none; }
 
-  /* Form fields */
+  /* Fields */
   .field { margin-bottom: 13px; }
   .field:last-child { margin-bottom: 0; }
-  .field label {
-    display: block;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--muted);
-    margin-bottom: 5px;
-  }
-  .field input, .field select, .field textarea {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-sm);
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.15s, background 0.15s;
-    -webkit-appearance: none;
-    appearance: none;
-  }
-  .field input:focus, .field select:focus, .field textarea:focus {
-    border-color: var(--accent-muted);
-    background: #fff;
-  }
+  .field label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 5px; }
+  .field input, .field textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.15s, background 0.15s; -webkit-appearance: none; appearance: none; }
+  .field input:focus, .field textarea:focus { border-color: var(--accent-muted); background: #fff; }
   .field textarea { height: 80px; resize: vertical; line-height: 1.5; }
-  .field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6a66' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
 
-  /* Status pills */
+  /* Status */
   .status-row { display: flex; gap: 8px; }
-  .status-pill {
-    flex: 1;
-    padding: 10px 8px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border-strong);
-    text-align: center;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    color: var(--muted);
-    background: var(--bg);
-    transition: all 0.15s;
-  }
+  .status-pill { flex: 1; padding: 10px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); text-align: center; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted); background: var(--bg); transition: all 0.15s; }
   .status-pill:active { transform: scale(0.97); }
   .status-pill.good { background: var(--success-light); color: var(--success); border-color: rgba(22,101,52,0.25); }
   .status-pill.damaged { background: var(--danger-light); color: var(--danger); border-color: rgba(192,57,43,0.25); }
   .status-pill.pending { background: var(--warn-light); color: var(--warn); border-color: rgba(180,83,9,0.25); }
 
-  /* Config section */
-  .config-toggle {
-    display: flex; align-items: center; justify-content: space-between;
-    cursor: pointer; padding: 2px 0;
-  }
+  /* Config */
+  .config-toggle { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 2px 0; }
   .config-toggle span { font-size: 13px; font-weight: 500; color: var(--muted); }
   .config-toggle svg { width: 16px; height: 16px; stroke: var(--hint); fill: none; stroke-width: 2; stroke-linecap: round; transition: transform 0.2s; }
   .config-toggle.open svg { transform: rotate(180deg); }
   .config-body { display: none; margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px; }
   .config-body.show { display: block; }
-  .config-note { font-size: 11px; color: var(--hint); line-height: 1.5; margin-top: 8px; }
+  .config-note { font-size: 11px; color: var(--hint); line-height: 1.6; margin-top: 10px; }
   .config-note a { color: var(--accent-muted); text-decoration: none; }
+  .config-note code { font-family: 'DM Mono', monospace; background: var(--bg); padding: 1px 4px; border-radius: 3px; }
+
+  /* Client ID fields (shown only if needed) */
+  .client-id-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .client-id-label { font-size: 11px; font-weight: 600; color: var(--hint); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
 
   /* Submit */
-  .submit-btn {
-    width: 100%;
-    padding: 15px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: var(--radius);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    letter-spacing: -0.2px;
-    transition: opacity 0.15s, transform 0.1s;
-    margin-top: 4px;
-  }
+  .submit-btn { width: 100%; padding: 15px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; letter-spacing: -0.2px; transition: opacity 0.15s, transform 0.1s; margin-top: 4px; }
   .submit-btn:active { transform: scale(0.99); }
   .submit-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
   /* Progress */
   .progress-wrap { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-top: 12px; }
   .progress-wrap.show { display: block; }
-  .progress-bar { height: 3px; background: var(--bg); border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
+  .progress-bar { height: 3px; background: var(--bg); border-radius: 2px; overflow: hidden; margin-bottom: 10px; }
   .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; }
-  .progress-steps { display: flex; flex-direction: column; gap: 5px; }
+  .progress-steps { display: flex; flex-direction: column; gap: 6px; }
   .pstep { font-size: 12px; color: var(--hint); display: flex; align-items: center; gap: 7px; }
   .pstep.active { color: var(--text); font-weight: 500; }
   .pstep.done { color: var(--success); }
@@ -229,54 +127,64 @@
   .pstep.active .pstep-dot { background: var(--accent); }
   .pstep.done .pstep-dot { background: var(--success); }
 
+  /* OCR */
+  .ocr-result { display: none; margin-top: 10px; }
+  .ocr-result.show { display: block; }
+  .ocr-label { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; margin-bottom: 5px; text-transform: uppercase; }
+  .ocr-box { background: var(--bg); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 10px 12px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); line-height: 1.6; max-height: 100px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; }
+
   /* Toast */
-  #toast {
-    position: fixed; bottom: 24px; left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--text); color: #fff;
-    padding: 10px 20px; border-radius: 40px;
-    font-size: 13px; font-weight: 500;
-    opacity: 0; transition: all 0.25s; z-index: 100;
-    white-space: nowrap; pointer-events: none;
-  }
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: #fff; padding: 10px 20px; border-radius: 40px; font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.25s; z-index: 100; white-space: nowrap; pointer-events: none; max-width: 90vw; text-overflow: ellipsis; overflow: hidden; }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   #toast.success { background: var(--accent); }
   #toast.error { background: var(--danger); }
-
-  /* OCR result */
-  .ocr-result { display: none; margin-top: 10px; }
-  .ocr-result.show { display: block; }
-  .ocr-box {
-    background: var(--bg);
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.6;
-    max-height: 100px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .ocr-label { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; margin-bottom: 5px; text-transform: uppercase; }
-
 </style>
 </head>
 <body>
 
 <div class="app-header">
-  <div class="logo-mark">
-    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.5"/><path d="M8 5V3h8v2"/></svg>
+  <div class="header-left">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.5"/><path d="M8 5V3h8v2"/></svg>
+    </div>
+    <div class="header-text">
+      <h1>Field Capture</h1>
+      <p>Photo + Data Logger</p>
+    </div>
   </div>
-  <div class="header-text">
-    <h1>Field Capture</h1>
-    <p>Photo + Data Logger</p>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+    <div class="auth-dots">
+      <div class="auth-dot" id="dotMs" title="Microsoft OneDrive"></div>
+      <div class="auth-dot" id="dotGs" title="Google Sheets"></div>
+    </div>
+    <div class="auth-dot-label" id="authLabel">Not connected</div>
   </div>
 </div>
 
 <div class="container">
+
+  <div class="setup-banner" id="setupBanner">
+    <strong>First-time setup:</strong> Sign in to Microsoft and Google below, then save your Sheet ID and Anthropic API key in App settings.
+  </div>
+
+  <!-- Sign In Card -->
+  <div class="card">
+    <div class="card-label">Accounts</div>
+    <div class="auth-row">
+      <button class="signin-btn ms" id="msBtn" onclick="signInMicrosoft()">
+        <svg viewBox="0 0 21 21" fill="none"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+        <span id="msBtnText">Sign in with Microsoft</span>
+      </button>
+      <button class="signin-btn signout" id="msSignout" onclick="signOutMicrosoft()" style="display:none;">Sign out</button>
+    </div>
+    <div class="auth-row">
+      <button class="signin-btn google" id="gsBtn" onclick="signInGoogle()">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        <span id="gsBtnText">Sign in with Google</span>
+      </button>
+      <button class="signin-btn signout" id="gsSignout" onclick="signOutGoogle()" style="display:none;">Sign out</button>
+    </div>
+  </div>
 
   <!-- Photo Card -->
   <div class="card">
@@ -289,19 +197,17 @@
         <span>Tap to capture</span>
       </div>
     </div>
-
     <div class="cam-btns">
       <button class="btn" id="startCamBtn" onclick="startCamera()">
-        <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;vertical-align:-2px;margin-right:5px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg>Camera
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg>Camera
       </button>
       <button class="btn primary" id="captureBtn" onclick="capturePhoto()" style="display:none;">Capture</button>
       <button class="btn danger" id="retakeBtn" onclick="retakePhoto()" style="display:none;">Retake</button>
       <label class="btn upload-label">
-        <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;vertical-align:-2px;margin-right:5px;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload
         <input type="file" accept="image/*" onchange="handleUpload(event)">
       </label>
     </div>
-
     <div class="ocr-result" id="ocrResult">
       <div class="ocr-label">Extracted text</div>
       <div class="ocr-box" id="ocrBox"></div>
@@ -311,27 +217,10 @@
   <!-- Details Card -->
   <div class="card">
     <div class="card-label">Entry details</div>
-
-    <div class="field">
-      <label>Date &amp; Time</label>
-      <input type="datetime-local" id="fDateTime">
-    </div>
-
-    <div class="field">
-      <label>Quantity</label>
-      <input type="number" id="fQty" placeholder="0" min="0">
-    </div>
-
-    <div class="field">
-      <label>Zone / Location</label>
-      <input type="text" id="fZone" placeholder="e.g. Warehouse A, Zone 3">
-    </div>
-
-    <div class="field">
-      <label>Supplier / Vendor</label>
-      <input type="text" id="fSupplier" placeholder="Supplier or vendor name">
-    </div>
-
+    <div class="field"><label>Date &amp; Time</label><input type="datetime-local" id="fDateTime"></div>
+    <div class="field"><label>Quantity</label><input type="number" id="fQty" placeholder="0" min="0"></div>
+    <div class="field"><label>Zone / Location</label><input type="text" id="fZone" placeholder="e.g. Warehouse A, Zone 3"></div>
+    <div class="field"><label>Supplier / Vendor</label><input type="text" id="fSupplier" placeholder="Supplier or vendor name"></div>
     <div class="field">
       <label>Status</label>
       <div class="status-row">
@@ -340,69 +229,50 @@
         <div class="status-pill" id="sp-Pending" onclick="setStatus('Pending')">Pending</div>
       </div>
     </div>
-
-    <div class="field">
-      <label>Remarks / Notes</label>
-      <textarea id="fRemarks" placeholder="Any additional remarks..."></textarea>
-    </div>
+    <div class="field"><label>Remarks / Notes</label><textarea id="fRemarks" placeholder="Any additional remarks..."></textarea></div>
   </div>
 
-  <!-- Config Card -->
+  <!-- App Settings Card -->
   <div class="card">
     <div class="config-toggle" id="configToggle" onclick="toggleConfig()">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span>Integration settings</span>
-        <span id="savedIndicator" style="display:none;align-items:center;gap:4px;background:#dcfce7;color:#166534;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:0.04em;">
-          <svg style="width:10px;height:10px;stroke:#166534;fill:none;stroke-width:2.5;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>SAVED
-        </span>
-      </div>
+      <span>App settings</span>
       <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
     <div class="config-body" id="configBody">
-      <div class="field">
-        <label>OneDrive folder path</label>
-        <input type="text" id="cfOneDrivePath" placeholder="e.g. FieldCaptures/2026" value="FieldCaptures">
+      <div class="field"><label>OneDrive folder path</label><input type="text" id="cfOneDrivePath" placeholder="e.g. FieldCaptures/2026" value="FieldCaptures"></div>
+      <div class="field"><label>Google Sheets ID</label><input type="text" id="cfSheetsId" placeholder="Paste your Sheet ID here"></div>
+      <div class="field"><label>Anthropic API key (for OCR)</label><input type="password" id="cfApiKey" placeholder="sk-ant-..."></div>
+
+      <div class="client-id-section">
+        <div class="client-id-label">OAuth Client IDs (one-time setup)</div>
+        <div class="field"><label>Azure Application (Client) ID</label><input type="text" id="cfMsClientId" placeholder="From Azure App Registration"></div>
+        <div class="field"><label>Google OAuth Client ID</label><input type="text" id="cfGsClientId" placeholder="From Google Cloud Console"></div>
       </div>
-      <div class="field">
-        <label>Microsoft access token (OneDrive)</label>
-        <input type="password" id="cfMsToken" placeholder="Paste token here">
-      </div>
-      <div class="field">
-        <label>Google Sheets ID</label>
-        <input type="text" id="cfSheetsId" placeholder="From your sheet URL">
-      </div>
-      <div class="field">
-        <label>Google access token (Sheets)</label>
-        <input type="password" id="cfGsToken" placeholder="Paste token here">
-      </div>
-      <div class="field">
-        <label>Anthropic API key (for OCR)</label>
-        <input type="password" id="cfApiKey" placeholder="sk-ant-...">
-      </div>
+
       <div style="display:flex;gap:8px;margin-top:14px;">
         <button class="btn primary" onclick="saveSettings()" style="flex:2;">
-          <svg style="width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2;vertical-align:-2px;margin-right:5px;" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Save settings
+          <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Save settings
         </button>
-        <button class="btn danger" onclick="clearSettings()" style="flex:1;">Clear</button>
+        <button class="btn danger" onclick="clearSettings()" style="flex:1;">Clear all</button>
       </div>
-      <p class="config-note" style="margin-top:10px;">
-        Settings are saved in your browser on this device — you only need to enter them once. Tokens are never sent anywhere except to Microsoft, Google, and Anthropic's official APIs.<br><br>
-        Need help getting tokens? <a href="https://developer.microsoft.com/en-us/graph/graph-explorer" target="_blank">Microsoft Graph Explorer</a> &nbsp;|&nbsp; <a href="https://developers.google.com/oauthplayground/" target="_blank">Google OAuth Playground</a>
+      <p class="config-note">
+        All settings are saved in your browser. Sign-in tokens refresh automatically — no more manual copy-pasting.<br><br>
+        Your <strong>Sheet ID</strong> is the long code in your Google Sheet URL between <code>/d/</code> and <code>/edit</code>.<br><br>
+        Your <strong>Azure Client ID</strong> is on your App Registration → Overview page.<br>
+        Your <strong>Google Client ID</strong> is in Google Cloud Console → Credentials.
       </p>
     </div>
   </div>
 
-  <!-- Submit -->
   <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">Submit entry</button>
 
-  <!-- Progress -->
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     <div class="progress-steps">
-      <div class="pstep" id="ps1"><span class="pstep-dot"></span> Reading image with OCR</div>
-      <div class="pstep" id="ps2"><span class="pstep-dot"></span> Uploading photo to OneDrive</div>
-      <div class="pstep" id="ps3"><span class="pstep-dot"></span> Writing row to Google Sheets</div>
-      <div class="pstep" id="ps4"><span class="pstep-dot"></span> Done</div>
+      <div class="pstep" id="ps1"><span class="pstep-dot"></span>Reading image with OCR</div>
+      <div class="pstep" id="ps2"><span class="pstep-dot"></span>Uploading photo to OneDrive</div>
+      <div class="pstep" id="ps3"><span class="pstep-dot"></span>Writing row to Google Sheets</div>
+      <div class="pstep" id="ps4"><span class="pstep-dot"></span>Done</div>
     </div>
   </div>
 
@@ -411,293 +281,292 @@
 <div id="toast"></div>
 
 <script>
-  // ── State ─────────────────────────────────────────────────────────────────
-  let stream = null;
-  let capturedBlob = null;
-  let capturedDataUrl = null;
-  let selectedStatus = '';
+// ── State ──────────────────────────────────────────────────────────────────
+let stream = null, capturedBlob = null, capturedDataUrl = null, selectedStatus = '';
+let msToken = null, msTokenExpiry = 0, gsToken = null, gsTokenExpiry = 0;
+const REDIRECT_URI = window.location.origin + window.location.pathname.replace(/\/$/, '');
 
-  // ── Init datetime ──────────────────────────────────────────────────────────
-  const now = new Date();
-  const pad = n => String(n).padStart(2,'0');
+// ── Init ───────────────────────────────────────────────────────────────────
+const pad = n => String(n).padStart(2,'0');
+function setNow() {
+  const n = new Date();
   document.getElementById('fDateTime').value =
-    `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    `${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}T${pad(n.getHours())}:${pad(n.getMinutes())}`;
+}
+setNow();
+loadSettings();
+handleOAuthCallback();
+updateAuthUI();
+setTimeout(() => { if (!msToken && !gsToken) document.getElementById('setupBanner').classList.add('show'); }, 400);
 
-  // ── Toast ──────────────────────────────────────────────────────────────────
-  function toast(msg, type='', dur=3500) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'show ' + type;
-    clearTimeout(t._tid);
-    t._tid = setTimeout(() => { t.className = ''; }, dur);
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, type='', dur=3500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  clearTimeout(t._tid); t._tid = setTimeout(() => { t.className = ''; }, dur);
+}
+
+// ── Progress ───────────────────────────────────────────────────────────────
+function stepActive(n) {
+  for(let i=1;i<=4;i++) document.getElementById('ps'+i).className = 'pstep'+(i<n?' done':i===n?' active':'');
+  document.getElementById('progressFill').style.width = ((n-1)/4*100)+'%';
+}
+function stepDone() {
+  for(let i=1;i<=4;i++) document.getElementById('ps'+i).className = 'pstep done';
+  document.getElementById('progressFill').style.width = '100%';
+}
+
+// ── OAuth — Microsoft ──────────────────────────────────────────────────────
+function signInMicrosoft() {
+  const clientId = document.getElementById('cfMsClientId').value.trim() || localStorage.getItem('fc_ms_client_id');
+  if (!clientId) { toast('Please enter your Azure Client ID in App settings first.', 'error', 4000); openConfig(); return; }
+  localStorage.setItem('fc_ms_client_id', clientId);
+  const params = new URLSearchParams({ client_id:clientId, response_type:'token', redirect_uri:REDIRECT_URI, scope:'Files.ReadWrite User.Read', response_mode:'fragment', state:'ms' });
+  window.location.href = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${params}`;
+}
+
+function signOutMicrosoft() {
+  msToken = null; msTokenExpiry = 0;
+  localStorage.removeItem('fc_ms_token'); localStorage.removeItem('fc_ms_expiry');
+  updateAuthUI(); toast('Signed out of Microsoft.', '', 2000);
+}
+
+// ── OAuth — Google ─────────────────────────────────────────────────────────
+function signInGoogle() {
+  const clientId = document.getElementById('cfGsClientId').value.trim() || localStorage.getItem('fc_gs_client_id');
+  if (!clientId) { toast('Please enter your Google Client ID in App settings first.', 'error', 4000); openConfig(); return; }
+  localStorage.setItem('fc_gs_client_id', clientId);
+  const params = new URLSearchParams({ client_id:clientId, redirect_uri:REDIRECT_URI, response_type:'token', scope:'https://www.googleapis.com/auth/spreadsheets', state:'gs' });
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+}
+
+function signOutGoogle() {
+  gsToken = null; gsTokenExpiry = 0;
+  localStorage.removeItem('fc_gs_token'); localStorage.removeItem('fc_gs_expiry');
+  updateAuthUI(); toast('Signed out of Google.', '', 2000);
+}
+
+// ── OAuth callback ─────────────────────────────────────────────────────────
+function handleOAuthCallback() {
+  const hash = window.location.hash.substring(1);
+  if (!hash) return;
+  const params = new URLSearchParams(hash);
+  const token = params.get('access_token');
+  const expiresIn = parseInt(params.get('expires_in') || '3600');
+  const state = params.get('state');
+  if (!token) return;
+  const expiry = Date.now() + expiresIn * 1000;
+  if (state === 'ms') {
+    msToken = token; msTokenExpiry = expiry;
+    localStorage.setItem('fc_ms_token', token); localStorage.setItem('fc_ms_expiry', expiry);
+    toast('Signed in to Microsoft! You are connected.', 'success', 3500);
+  } else if (state === 'gs') {
+    gsToken = token; gsTokenExpiry = expiry;
+    localStorage.setItem('fc_gs_token', token); localStorage.setItem('fc_gs_expiry', expiry);
+    toast('Signed in to Google! You are connected.', 'success', 3500);
   }
+  history.replaceState(null, '', window.location.pathname);
+  document.getElementById('setupBanner').classList.remove('show');
+}
 
-  // ── Progress steps ─────────────────────────────────────────────────────────
-  function stepActive(n) {
-    for(let i=1;i<=4;i++) {
-      const el = document.getElementById('ps'+i);
-      el.className = 'pstep' + (i < n ? ' done' : i === n ? ' active' : '');
-    }
-    document.getElementById('progressFill').style.width = ((n-1)/4*100) + '%';
-  }
+// ── Load saved tokens ──────────────────────────────────────────────────────
+function loadSavedTokens() {
+  const msTok = localStorage.getItem('fc_ms_token');
+  const msExp = parseInt(localStorage.getItem('fc_ms_expiry') || '0');
+  if (msTok && msExp > Date.now() + 60000) { msToken = msTok; msTokenExpiry = msExp; }
+  const gsTok = localStorage.getItem('fc_gs_token');
+  const gsExp = parseInt(localStorage.getItem('fc_gs_expiry') || '0');
+  if (gsTok && gsExp > Date.now() + 60000) { gsToken = gsTok; gsTokenExpiry = gsExp; }
+}
 
-  function stepDone() {
-    for(let i=1;i<=4;i++) document.getElementById('ps'+i).className = 'pstep done';
-    document.getElementById('progressFill').style.width = '100%';
-  }
+// ── Auth UI ────────────────────────────────────────────────────────────────
+function updateAuthUI() {
+  loadSavedTokens();
+  const msOk = !!(msToken && msTokenExpiry > Date.now());
+  const gsOk = !!(gsToken && gsTokenExpiry > Date.now());
+  const msBtn = document.getElementById('msBtn');
+  document.getElementById('msBtnText').textContent = msOk ? 'Microsoft connected' : 'Sign in with Microsoft';
+  msBtn.classList.toggle('connected', msOk);
+  document.getElementById('msSignout').style.display = msOk ? 'flex' : 'none';
+  const gsBtn = document.getElementById('gsBtn');
+  document.getElementById('gsBtnText').textContent = gsOk ? 'Google connected' : 'Sign in with Google';
+  gsBtn.classList.toggle('connected', gsOk);
+  document.getElementById('gsSignout').style.display = gsOk ? 'flex' : 'none';
+  document.getElementById('dotMs').classList.toggle('connected', msOk);
+  document.getElementById('dotGs').classList.toggle('connected', gsOk);
+  document.getElementById('authLabel').textContent = msOk && gsOk ? 'All connected' : msOk || gsOk ? 'Partially connected' : 'Not connected';
+}
 
-  // ── Camera ─────────────────────────────────────────────────────────────────
-  function handleAreaClick() {
-    if (!stream && !capturedDataUrl) startCamera();
-  }
+// ── Settings ───────────────────────────────────────────────────────────────
+const SFIELDS = ['cfOneDrivePath','cfSheetsId','cfApiKey','cfMsClientId','cfGsClientId'];
+function saveSettings() {
+  const s = {};
+  SFIELDS.forEach(id => { s[id] = document.getElementById(id).value; });
+  localStorage.setItem('fc_settings', JSON.stringify(s));
+  toast('Settings saved!', 'success', 2000);
+}
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('fc_settings') || '{}');
+    SFIELDS.forEach(id => { if (s[id]) document.getElementById(id).value = s[id]; });
+  } catch(e) {}
+  loadSavedTokens();
+}
+function clearSettings() {
+  if (!confirm('Clear all saved settings and sign out of all accounts?')) return;
+  ['fc_settings','fc_ms_token','fc_ms_expiry','fc_gs_token','fc_gs_expiry','fc_ms_client_id','fc_gs_client_id'].forEach(k => localStorage.removeItem(k));
+  SFIELDS.forEach(id => { document.getElementById(id).value = ''; });
+  msToken = null; gsToken = null; msTokenExpiry = 0; gsTokenExpiry = 0;
+  updateAuthUI(); toast('All settings cleared.', '', 2000);
+}
+function toggleConfig() {
+  document.getElementById('configToggle').classList.toggle('open');
+  document.getElementById('configBody').classList.toggle('show');
+}
+function openConfig() {
+  document.getElementById('configToggle').classList.add('open');
+  document.getElementById('configBody').classList.add('show');
+  setTimeout(() => document.getElementById('configBody').scrollIntoView({ behavior:'smooth' }), 100);
+}
 
-  async function startCamera() {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
-      const v = document.getElementById('videoEl');
-      v.srcObject = stream;
-      v.style.display = 'block';
-      document.getElementById('previewImg').style.display = 'none';
-      document.getElementById('camPlaceholder').style.display = 'none';
-      document.getElementById('captureBtn').style.display = 'flex';
-      document.getElementById('startCamBtn').style.display = 'none';
-      document.getElementById('retakeBtn').style.display = 'none';
-    } catch(e) {
-      toast('Camera unavailable. Use Upload instead.', 'error');
-    }
-  }
-
-  function capturePhoto() {
+// ── Camera ─────────────────────────────────────────────────────────────────
+function handleAreaClick() { if (!stream && !capturedDataUrl) startCamera(); }
+async function startCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' }, audio:false });
     const v = document.getElementById('videoEl');
-    const c = document.createElement('canvas');
-    c.width = v.videoWidth; c.height = v.videoHeight;
-    c.getContext('2d').drawImage(v, 0, 0);
-    c.toBlob(blob => {
-      capturedBlob = blob;
-      capturedDataUrl = c.toDataURL('image/jpeg', 0.88);
-      showPreview(capturedDataUrl);
-      stopStream();
-    }, 'image/jpeg', 0.88);
-  }
-
-  function handleUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    capturedBlob = file;
-    const r = new FileReader();
-    r.onload = ev => { capturedDataUrl = ev.target.result; showPreview(capturedDataUrl); };
-    r.readAsDataURL(file);
-  }
-
-  function showPreview(url) {
-    const img = document.getElementById('previewImg');
-    img.src = url; img.style.display = 'block';
-    document.getElementById('videoEl').style.display = 'none';
-    document.getElementById('camPlaceholder').style.display = 'none';
-    document.getElementById('captureBtn').style.display = 'none';
-    document.getElementById('startCamBtn').style.display = 'none';
-    document.getElementById('retakeBtn').style.display = 'flex';
-  }
-
-  function retakePhoto() {
-    capturedBlob = null; capturedDataUrl = null;
+    v.srcObject = stream; v.style.display = 'block';
     document.getElementById('previewImg').style.display = 'none';
+    document.getElementById('camPlaceholder').style.display = 'none';
+    document.getElementById('captureBtn').style.display = 'flex';
+    document.getElementById('startCamBtn').style.display = 'none';
     document.getElementById('retakeBtn').style.display = 'none';
-    document.getElementById('startCamBtn').style.display = 'flex';
-    document.getElementById('camPlaceholder').style.display = 'flex';
-    document.getElementById('ocrResult').classList.remove('show');
-    document.getElementById('ocrBox').textContent = '';
-    stopStream();
+  } catch(e) { toast('Camera unavailable — use Upload instead.', 'error'); }
+}
+function capturePhoto() {
+  const v = document.getElementById('videoEl');
+  const c = document.createElement('canvas');
+  c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v, 0, 0);
+  c.toBlob(blob => { capturedBlob = blob; capturedDataUrl = c.toDataURL('image/jpeg', 0.88); showPreview(capturedDataUrl); stopStream(); }, 'image/jpeg', 0.88);
+}
+function handleUpload(e) {
+  const file = e.target.files[0]; if (!file) return;
+  capturedBlob = file;
+  const r = new FileReader();
+  r.onload = ev => { capturedDataUrl = ev.target.result; showPreview(capturedDataUrl); };
+  r.readAsDataURL(file);
+}
+function showPreview(url) {
+  document.getElementById('previewImg').src = url;
+  document.getElementById('previewImg').style.display = 'block';
+  document.getElementById('videoEl').style.display = 'none';
+  document.getElementById('camPlaceholder').style.display = 'none';
+  document.getElementById('captureBtn').style.display = 'none';
+  document.getElementById('startCamBtn').style.display = 'none';
+  document.getElementById('retakeBtn').style.display = 'flex';
+}
+function retakePhoto() {
+  capturedBlob = null; capturedDataUrl = null;
+  document.getElementById('previewImg').style.display = 'none';
+  document.getElementById('retakeBtn').style.display = 'none';
+  document.getElementById('startCamBtn').style.display = 'flex';
+  document.getElementById('camPlaceholder').style.display = 'flex';
+  document.getElementById('ocrResult').classList.remove('show');
+  document.getElementById('ocrBox').textContent = '';
+  stopStream();
+}
+function stopStream() {
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  document.getElementById('videoEl').style.display = 'none';
+  document.getElementById('captureBtn').style.display = 'none';
+}
+
+// ── Status ─────────────────────────────────────────────────────────────────
+function setStatus(s) {
+  selectedStatus = s;
+  ['Good','Damaged','Pending'].forEach(x => { document.getElementById('sp-'+x).className = 'status-pill'+(x===s?' '+x.toLowerCase():''); });
+}
+
+// ── OCR ────────────────────────────────────────────────────────────────────
+async function runOCR(dataUrl, apiKey) {
+  const base64 = dataUrl.split(',')[1];
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'x-api-key':apiKey, 'anthropic-version':'2023-06-01' },
+    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{ role:'user', content:[
+      { type:'image', source:{ type:'base64', media_type:'image/jpeg', data:base64 } },
+      { type:'text', text:'Extract ALL visible text from this image exactly as it appears. Return only the raw extracted text with no commentary.' }
+    ]}]})
+  });
+  if (!resp.ok) throw new Error('OCR API error: '+resp.status);
+  const data = await resp.json();
+  return data.content?.map(c=>c.text||'').join('')||'(no text found)';
+}
+
+// ── OneDrive ───────────────────────────────────────────────────────────────
+async function uploadOneDrive(blob, filename, folderPath, token) {
+  const path = encodeURIComponent(folderPath+'/'+filename);
+  const resp = await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/${path}:/content`, {
+    method:'PUT', headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'image/jpeg' }, body:blob
+  });
+  if (!resp.ok) {
+    if (resp.status === 401) { signOutMicrosoft(); throw new Error('Microsoft session expired. Please sign in again.'); }
+    throw new Error('OneDrive upload failed ('+resp.status+')');
   }
+  return (await resp.json()).webUrl || '';
+}
 
-  function stopStream() {
-    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-    document.getElementById('videoEl').style.display = 'none';
-    document.getElementById('captureBtn').style.display = 'none';
+// ── Google Sheets ──────────────────────────────────────────────────────────
+async function appendSheets(values, sheetId, token) {
+  const resp = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1:append?valueInputOption=USER_ENTERED`, {
+    method:'POST', headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' },
+    body: JSON.stringify({ values:[values] })
+  });
+  if (!resp.ok) {
+    if (resp.status === 401) { signOutGoogle(); throw new Error('Google session expired. Please sign in again.'); }
+    throw new Error('Google Sheets error ('+resp.status+')');
   }
+}
 
-  // ── Status ─────────────────────────────────────────────────────────────────
-  function setStatus(s) {
-    selectedStatus = s;
-    ['Good','Damaged','Pending'].forEach(x => {
-      const el = document.getElementById('sp-'+x);
-      el.className = 'status-pill' + (x===s ? ' '+x.toLowerCase() : '');
-    });
-  }
-
-  // ── Config toggle ──────────────────────────────────────────────────────────
-  function toggleConfig() {
-    document.getElementById('configToggle').classList.toggle('open');
-    document.getElementById('configBody').classList.toggle('show');
-  }
-
-  // ── Save settings to localStorage ─────────────────────────────────────────
-  const CONFIG_FIELDS = ['cfOneDrivePath','cfMsToken','cfSheetsId','cfGsToken','cfApiKey'];
-
-  function saveSettings() {
-    const settings = {};
-    CONFIG_FIELDS.forEach(id => { settings[id] = document.getElementById(id).value; });
-    localStorage.setItem('fc_settings', JSON.stringify(settings));
-    toast('Settings saved!', 'success', 2000);
-  }
-
-  function loadSettings() {
-    try {
-      const saved = JSON.parse(localStorage.getItem('fc_settings') || '{}');
-      CONFIG_FIELDS.forEach(id => {
-        if (saved[id]) document.getElementById(id).value = saved[id];
-      });
-      if (Object.keys(saved).length > 0) {
-        const indicator = document.getElementById('savedIndicator');
-        if (indicator) indicator.style.display = 'inline-flex';
-      }
-    } catch(e) {}
-  }
-
-  function clearSettings() {
-    if (!confirm('Clear all saved integration settings?')) return;
-    localStorage.removeItem('fc_settings');
-    CONFIG_FIELDS.forEach(id => { document.getElementById(id).value = ''; });
-    const indicator = document.getElementById('savedIndicator');
-    if (indicator) indicator.style.display = 'none';
-    toast('Settings cleared.', '', 2000);
-  }
-
-  // Load on startup
-  loadSettings();
-
-  // ── OCR ────────────────────────────────────────────────────────────────────
-  async function runOCR(dataUrl, apiKey) {
-    const base64 = dataUrl.split(',')[1];
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: base64 } },
-            { type: 'text', text: 'Extract ALL visible text from this image exactly as it appears. Return only the raw extracted text with no commentary, labels, or explanation.' }
-          ]
-        }]
-      })
-    });
-    if (!resp.ok) throw new Error('OCR API error: ' + resp.status);
-    const data = await resp.json();
-    return data.content?.map(c => c.text||'').join('') || '(no text found)';
-  }
-
-  // ── OneDrive upload ────────────────────────────────────────────────────────
-  async function uploadOneDrive(blob, filename, folderPath, token) {
-    const path = encodeURIComponent(folderPath + '/' + filename);
-    const url = `https://graph.microsoft.com/v1.0/me/drive/root:/${path}:/content`;
-    const resp = await fetch(url, {
-      method: 'PUT',
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'image/jpeg' },
-      body: blob
-    });
-    if (!resp.ok) throw new Error('OneDrive upload failed (' + resp.status + ')');
-    const data = await resp.json();
-    return data.webUrl || '';
-  }
-
-  // ── Google Sheets append ───────────────────────────────────────────────────
-  async function appendSheets(values, sheetId, token) {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1:append?valueInputOption=USER_ENTERED`;
-    const resp = await fetch(url, {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ values: [values] })
-    });
-    if (!resp.ok) throw new Error('Google Sheets error (' + resp.status + ')');
-  }
-
-  // ── Submit ─────────────────────────────────────────────────────────────────
-  async function handleSubmit() {
-    if (!capturedBlob) { toast('Please capture or upload a photo first.', 'error'); return; }
-
-    const apiKey     = document.getElementById('cfApiKey').value.trim();
-    const msToken    = document.getElementById('cfMsToken').value.trim();
-    const gsToken    = document.getElementById('cfGsToken').value.trim();
-    const sheetsId   = document.getElementById('cfSheetsId').value.trim();
-    const folderPath = document.getElementById('cfOneDrivePath').value.trim() || 'FieldCaptures';
-
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    document.getElementById('progressWrap').classList.add('show');
-
-    let ocrText = '';
-    let driveUrl = '';
-    const filename = `capture_${Date.now()}.jpg`;
-
-    try {
-      // Step 1 — OCR
-      stepActive(1);
-      if (apiKey) {
-        ocrText = await runOCR(capturedDataUrl, apiKey);
-        document.getElementById('ocrBox').textContent = ocrText;
-        document.getElementById('ocrResult').classList.add('show');
-      } else {
-        ocrText = '(no API key — OCR skipped)';
-      }
-
-      // Step 2 — OneDrive
-      stepActive(2);
-      if (msToken) {
-        driveUrl = await uploadOneDrive(capturedBlob, filename, folderPath, msToken);
-      } else {
-        driveUrl = '(no OneDrive token)';
-      }
-
-      // Step 3 — Sheets
-      stepActive(3);
-      const row = [
-        document.getElementById('fDateTime').value,
-        document.getElementById('fQty').value,
-        document.getElementById('fZone').value,
-        document.getElementById('fSupplier').value,
-        selectedStatus,
-        document.getElementById('fRemarks').value,
-        ocrText,
-        driveUrl,
-        filename
-      ];
-
-      if (gsToken && sheetsId) {
-        await appendSheets(row, sheetsId, gsToken);
-      } else {
-        console.log('Sheets row (tokens missing):', row);
-      }
-
-      // Done
-      stepActive(4);
-      stepDone();
-      toast('Entry submitted successfully!', 'success', 4000);
-
-      setTimeout(() => {
-        btn.disabled = false;
-        document.getElementById('progressWrap').classList.remove('show');
-        retakePhoto();
-        document.getElementById('fQty').value = '';
-        document.getElementById('fRemarks').value = '';
-        document.getElementById('fZone').value = '';
-        document.getElementById('fSupplier').value = '';
-        setStatus('');
-        selectedStatus = '';
-      }, 2500);
-
-    } catch(err) {
-      toast(err.message, 'error', 6000);
+// ── Submit ─────────────────────────────────────────────────────────────────
+async function handleSubmit() {
+  if (!capturedBlob) { toast('Please capture or upload a photo first.', 'error'); return; }
+  const apiKey     = document.getElementById('cfApiKey').value.trim();
+  const sheetsId   = document.getElementById('cfSheetsId').value.trim();
+  const folderPath = document.getElementById('cfOneDrivePath').value.trim() || 'FieldCaptures';
+  const curMs = msToken && msTokenExpiry > Date.now()+30000 ? msToken : null;
+  const curGs = gsToken && gsTokenExpiry > Date.now()+30000 ? gsToken : null;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('progressWrap').classList.add('show');
+  let ocrText = '', driveUrl = '';
+  const filename = `capture_${Date.now()}.jpg`;
+  try {
+    stepActive(1);
+    if (apiKey) { ocrText = await runOCR(capturedDataUrl, apiKey); document.getElementById('ocrBox').textContent = ocrText; document.getElementById('ocrResult').classList.add('show'); }
+    else ocrText = '(OCR skipped — no API key)';
+    stepActive(2);
+    driveUrl = curMs ? await uploadOneDrive(capturedBlob, filename, folderPath, curMs) : '(not signed in to Microsoft)';
+    stepActive(3);
+    const row = [ document.getElementById('fDateTime').value, document.getElementById('fQty').value, document.getElementById('fZone').value, document.getElementById('fSupplier').value, selectedStatus, document.getElementById('fRemarks').value, ocrText, driveUrl, filename ];
+    if (curGs && sheetsId) await appendSheets(row, sheetsId, curGs);
+    else console.log('Sheets row (skipped):', row);
+    stepActive(4); stepDone();
+    toast('Entry submitted successfully!', 'success', 4000);
+    setTimeout(() => {
       btn.disabled = false;
-      console.error(err);
-    }
+      document.getElementById('progressWrap').classList.remove('show');
+      retakePhoto();
+      ['fQty','fRemarks','fZone','fSupplier'].forEach(id => document.getElementById(id).value = '');
+      setStatus(''); selectedStatus = ''; setNow();
+    }, 2500);
+  } catch(err) {
+    toast(err.message, 'error', 6000);
+    btn.disabled = false; console.error(err);
+    updateAuthUI();
   }
+}
 </script>
 </body>
 </html>
