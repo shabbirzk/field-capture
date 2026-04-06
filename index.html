@@ -599,9 +599,33 @@ async function handleSubmit() {
       driveUrl = curMs ? await uploadOneDrive(capturedBlob, filename, folderPath, curMs) : '(not signed in to Microsoft)';
     } catch(msErr) { driveUrl = '(OneDrive failed: '+msErr.message+')'; toast('OneDrive step failed: '+msErr.message, 'error', 5000); }
     stepActive(3);
-    const row = [ document.getElementById('fDateTime').value, document.getElementById('fQty').value, document.getElementById('fZone').value, document.getElementById('fSupplier').value, selectedStatus, document.getElementById('fRemarks').value, ocrText, driveUrl, filename ];
-    if (curGs && sheetsId) await appendSheets(row, sheetsId, curGs);
-    else console.log('Sheets row (skipped):', row);
+    const row = [
+      document.getElementById('fDateTime').value || 'no-date',
+      document.getElementById('fQty').value || '0',
+      document.getElementById('fZone').value || '',
+      document.getElementById('fSupplier').value || '',
+      selectedStatus || '',
+      document.getElementById('fRemarks').value || '',
+      ocrText || '',
+      driveUrl || '',
+      filename || ''
+    ];
+    console.log('=== DEBUG ROW ===', JSON.stringify(row));
+    console.log('=== DEBUG sheetId ===', sheetsId);
+    console.log('=== DEBUG gsToken exists ===', !!curGs);
+    console.log('=== DEBUG gsToken expiry ===', new Date(gsTokenExpiry).toLocaleTimeString());
+
+    if (!curGs) {
+      toast('Google not signed in — please sign in again.', 'error', 4000);
+      console.log('Sheets skipped: no Google token');
+    } else if (!sheetsId) {
+      toast('Google Sheets ID is missing — check App settings.', 'error', 4000);
+      console.log('Sheets skipped: no sheet ID');
+    } else {
+      console.log('Sending to Sheets...');
+      await appendSheets(row, sheetsId, curGs);
+      console.log('Sheets write complete!');
+    }
     stepActive(4); stepDone();
     toast('Entry submitted successfully!', 'success', 4000);
     setTimeout(() => {
