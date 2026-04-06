@@ -350,7 +350,12 @@
   <!-- Config Card -->
   <div class="card">
     <div class="config-toggle" id="configToggle" onclick="toggleConfig()">
-      <span>Integration settings</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span>Integration settings</span>
+        <span id="savedIndicator" style="display:none;align-items:center;gap:4px;background:#dcfce7;color:#166534;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:0.04em;">
+          <svg style="width:10px;height:10px;stroke:#166534;fill:none;stroke-width:2.5;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>SAVED
+        </span>
+      </div>
       <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
     <div class="config-body" id="configBody">
@@ -374,8 +379,14 @@
         <label>Anthropic API key (for OCR)</label>
         <input type="password" id="cfApiKey" placeholder="sk-ant-...">
       </div>
-      <p class="config-note">
-        Tokens are stored in your browser session only and never sent anywhere except to Microsoft, Google, and Anthropic's official APIs.<br><br>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button class="btn primary" onclick="saveSettings()" style="flex:2;">
+          <svg style="width:13px;height:13px;stroke:#fff;fill:none;stroke-width:2;vertical-align:-2px;margin-right:5px;" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Save settings
+        </button>
+        <button class="btn danger" onclick="clearSettings()" style="flex:1;">Clear</button>
+      </div>
+      <p class="config-note" style="margin-top:10px;">
+        Settings are saved in your browser on this device — you only need to enter them once. Tokens are never sent anywhere except to Microsoft, Google, and Anthropic's official APIs.<br><br>
         Need help getting tokens? <a href="https://developer.microsoft.com/en-us/graph/graph-explorer" target="_blank">Microsoft Graph Explorer</a> &nbsp;|&nbsp; <a href="https://developers.google.com/oauthplayground/" target="_blank">Google OAuth Playground</a>
       </p>
     </div>
@@ -519,6 +530,41 @@
     document.getElementById('configToggle').classList.toggle('open');
     document.getElementById('configBody').classList.toggle('show');
   }
+
+  // ── Save settings to localStorage ─────────────────────────────────────────
+  const CONFIG_FIELDS = ['cfOneDrivePath','cfMsToken','cfSheetsId','cfGsToken','cfApiKey'];
+
+  function saveSettings() {
+    const settings = {};
+    CONFIG_FIELDS.forEach(id => { settings[id] = document.getElementById(id).value; });
+    localStorage.setItem('fc_settings', JSON.stringify(settings));
+    toast('Settings saved!', 'success', 2000);
+  }
+
+  function loadSettings() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('fc_settings') || '{}');
+      CONFIG_FIELDS.forEach(id => {
+        if (saved[id]) document.getElementById(id).value = saved[id];
+      });
+      if (Object.keys(saved).length > 0) {
+        const indicator = document.getElementById('savedIndicator');
+        if (indicator) indicator.style.display = 'inline-flex';
+      }
+    } catch(e) {}
+  }
+
+  function clearSettings() {
+    if (!confirm('Clear all saved integration settings?')) return;
+    localStorage.removeItem('fc_settings');
+    CONFIG_FIELDS.forEach(id => { document.getElementById(id).value = ''; });
+    const indicator = document.getElementById('savedIndicator');
+    if (indicator) indicator.style.display = 'none';
+    toast('Settings cleared.', '', 2000);
+  }
+
+  // Load on startup
+  loadSettings();
 
   // ── OCR ────────────────────────────────────────────────────────────────────
   async function runOCR(dataUrl, apiKey) {
