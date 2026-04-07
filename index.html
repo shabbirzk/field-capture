@@ -411,6 +411,8 @@ function signInMicrosoft() {
   localStorage.setItem('fc_ms_client_id', clientId);
   const tenant = document.getElementById('cfMsTenant')?.value || localStorage.getItem('fc_ms_tenant') || 'organizations';
   localStorage.setItem('fc_ms_tenant', tenant);
+  // Save all current settings before redirect so they are restored after login
+  saveSettingsToStorage();
   const params = new URLSearchParams({ client_id:clientId, response_type:'token', redirect_uri:REDIRECT_URI, scope:'Files.ReadWrite User.Read', response_mode:'fragment', state:'ms' });
   window.location.href = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?${params}`;
 }
@@ -426,6 +428,8 @@ function signInGoogle() {
   const clientId = document.getElementById('cfGsClientId').value.trim() || localStorage.getItem('fc_gs_client_id');
   if (!clientId) { toast('Please enter your Google Client ID in App settings first.', 'error', 4000); openConfig(); return; }
   localStorage.setItem('fc_gs_client_id', clientId);
+  // Save all current settings before redirect so they are restored after login
+  saveSettingsToStorage();
   const params = new URLSearchParams({ client_id:clientId, redirect_uri:REDIRECT_URI, response_type:'token', scope:'https://www.googleapis.com/auth/spreadsheets', state:'gs' });
   window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
 }
@@ -489,10 +493,19 @@ function updateAuthUI() {
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
+function saveSettingsToStorage() {
+  // Saves current form values AND merges with any existing saved values
+  // so nothing is lost during OAuth redirects
+  const existing = JSON.parse(localStorage.getItem('fc_settings') || '{}');
+  SFIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.value.trim()) existing[id] = el.value.trim();
+  });
+  localStorage.setItem('fc_settings', JSON.stringify(existing));
+}
+
 function saveSettings() {
-  const s = {};
-  SFIELDS.forEach(id => { s[id] = document.getElementById(id).value; });
-  localStorage.setItem('fc_settings', JSON.stringify(s));
+  saveSettingsToStorage();
   toast('Settings saved!', 'success', 2000);
 }
 function loadSettings() {
