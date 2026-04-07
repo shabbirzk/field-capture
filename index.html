@@ -295,8 +295,12 @@ function setNow() {
     `${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}T${pad(n.getHours())}:${pad(n.getMinutes())}`;
 }
 setNow();
+// Define SFIELDS early so loadSettings can use it
+const SFIELDS = ['cfOneDrivePath','cfSheetsId','cfApiKey','cfMsClientId','cfMsTenant','cfGsClientId'];
+
 loadSettings();
 handleOAuthCallback();
+loadSettings(); // reload again after OAuth to restore any fields cleared by redirect
 updateAuthUI();
 setTimeout(() => { if (!msToken && !gsToken) document.getElementById('setupBanner').classList.add('show'); }, 400);
 
@@ -401,7 +405,6 @@ function updateAuthUI() {
 }
 
 // ── Settings ───────────────────────────────────────────────────────────────
-const SFIELDS = ['cfOneDrivePath','cfSheetsId','cfApiKey','cfMsClientId','cfMsTenant','cfGsClientId'];
 function saveSettings() {
   const s = {};
   SFIELDS.forEach(id => { s[id] = document.getElementById(id).value; });
@@ -411,8 +414,16 @@ function saveSettings() {
 function loadSettings() {
   try {
     const s = JSON.parse(localStorage.getItem('fc_settings') || '{}');
-    SFIELDS.forEach(id => { if (s[id]) document.getElementById(id).value = s[id]; });
-  } catch(e) {}
+    SFIELDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && s[id]) el.value = s[id];
+    });
+    // Also restore select dropdowns
+    if (s['cfMsTenant']) {
+      const sel = document.getElementById('cfMsTenant');
+      if (sel) sel.value = s['cfMsTenant'];
+    }
+  } catch(e) { console.error('loadSettings error:', e); }
   loadSavedTokens();
 }
 function clearSettings() {
@@ -578,9 +589,13 @@ async function appendSheets(values, sheetId, token) {
 // ── Submit ─────────────────────────────────────────────────────────────────
 async function handleSubmit() {
   if (!capturedBlob) { toast('Please capture or upload a photo first.', 'error'); return; }
-  const apiKey     = document.getElementById('cfApiKey').value.trim();
-  const sheetsId   = document.getElementById('cfSheetsId').value.trim();
-  const folderPath = document.getElementById('cfOneDrivePath').value.trim() || 'FieldCaptures';
+  // Read from form field first, fall back to localStorage directly
+  const saved = JSON.parse(localStorage.getItem('fc_settings') || '{}');
+  const apiKey     = document.getElementById('cfApiKey').value.trim() || saved.cfApiKey || '';
+  const sheetsId   = document.getElementById('cfSheetsId').value.trim() || saved.cfSheetsId || '';
+  const folderPath = document.getElementById('cfOneDrivePath').value.trim() || saved.cfOneDrivePath || 'FieldCaptures';
+  console.log('=== FINAL sheetsId ===', sheetsId);
+  console.log('=== FINAL apiKey exists ===', !!apiKey);
   const curMs = msToken && msTokenExpiry > Date.now()+30000 ? msToken : null;
   const curGs = gsToken && gsTokenExpiry > Date.now()+30000 ? gsToken : null;
   const btn = document.getElementById('submitBtn');
