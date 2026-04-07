@@ -582,7 +582,6 @@ async function appendSheets(values, sheetId, token) {
     throw new Error('Google Sheets error ('+resp.status+'): '+(errData.error?.message||'unknown'));
   }
   const result = await resp.json();
-  console.log('Sheets append result:', result);
   return result;
 }
 
@@ -594,8 +593,6 @@ async function handleSubmit() {
   const apiKey     = document.getElementById('cfApiKey').value.trim() || saved.cfApiKey || '';
   const sheetsId   = document.getElementById('cfSheetsId').value.trim() || saved.cfSheetsId || '';
   const folderPath = document.getElementById('cfOneDrivePath').value.trim() || saved.cfOneDrivePath || 'FieldCaptures';
-  console.log('=== FINAL sheetsId ===', sheetsId);
-  console.log('=== FINAL apiKey exists ===', !!apiKey);
   const curMs = msToken && msTokenExpiry > Date.now()+30000 ? msToken : null;
   const curGs = gsToken && gsTokenExpiry > Date.now()+30000 ? gsToken : null;
   const btn = document.getElementById('submitBtn');
@@ -625,21 +622,13 @@ async function handleSubmit() {
       driveUrl || '',
       filename || ''
     ];
-    console.log('=== DEBUG ROW ===', JSON.stringify(row));
-    console.log('=== DEBUG sheetId ===', sheetsId);
-    console.log('=== DEBUG gsToken exists ===', !!curGs);
-    console.log('=== DEBUG gsToken expiry ===', new Date(gsTokenExpiry).toLocaleTimeString());
 
     if (!curGs) {
       toast('Google not signed in — please sign in again.', 'error', 4000);
-      console.log('Sheets skipped: no Google token');
     } else if (!sheetsId) {
       toast('Google Sheets ID is missing — check App settings.', 'error', 4000);
-      console.log('Sheets skipped: no sheet ID');
     } else {
-      console.log('Sending to Sheets...');
       await appendSheets(row, sheetsId, curGs);
-      console.log('Sheets write complete!');
     }
     stepActive(4); stepDone();
     toast('Entry submitted successfully!', 'success', 4000);
