@@ -241,7 +241,20 @@
     <div class="card-label">Entry details</div>
     <div class="field"><label>Date &amp; Time</label><input type="datetime-local" id="fDateTime"></div>
     <div class="field"><label>Quantity</label><input type="number" id="fQty" placeholder="0" min="0"></div>
-    <div class="field"><label>Zone / Location</label><input type="text" id="fZone" placeholder="e.g. Warehouse A, Zone 3"></div>
+    <div class="field">
+      <label>Zone / Location</label>
+      <select id="fZone" style="width:100%;padding:10px 12px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22%3E%3Cpath fill=%22%236b6a66%22 d=%22M6 8L1 3h10z%22/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;">
+        <option value="">-- Select location --</option>
+        <option value="WF MAKTOUM">WF MAKTOUM</option>
+        <option value="NATUZZI MAKTOUM">NATUZZI MAKTOUM</option>
+        <option value="NATUZZI SHEIKH ZAYED RD">NATUZZI SHEIKH ZAYED RD</option>
+        <option value="DUBAI HILLS MALL">DUBAI HILLS MALL</option>
+        <option value="ADH GALLERIA MALL">ADH GALLERIA MALL</option>
+        <option value="ADH YAS MALL">ADH YAS MALL</option>
+        <option value="WF BOUTIQUE">WF BOUTIQUE</option>
+        <option value="DIP WH">DIP WH</option>
+      </select>
+    </div>
     <div class="field"><label>Supplier / Vendor</label><input type="text" id="fSupplier" placeholder="Supplier or vendor name"></div>
     <div class="field">
       <label>Status</label>
@@ -733,7 +746,8 @@ async function handleSubmit() {
       btn.disabled = false;
       document.getElementById('progressWrap').classList.remove('show');
       retakePhoto();
-      ['fQty','fRemarks','fZone','fSupplier'].forEach(id => document.getElementById(id).value = '');
+      ['fQty','fRemarks','fSupplier'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('fZone').selectedIndex = 0;
       setStatus(''); selectedStatus = ''; setNow();
     }, 2500);
   } catch(err) {
