@@ -41,6 +41,12 @@
   .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; margin-bottom: 12px; }
   .card-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; color: var(--hint); text-transform: uppercase; margin-bottom: 12px; }
 
+  /* OCR */
+  .ocr-result { display: none; margin-top: 10px; }
+  .ocr-result.show { display: block; }
+  .ocr-label { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; margin-bottom: 5px; text-transform: uppercase; }
+  .ocr-box { background: var(--bg); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 10px 12px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); line-height: 1.6; max-height: 100px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; }
+
   /* Setup banner */
   .setup-banner { background: var(--warn-light); border: 1px solid rgba(180,83,9,0.2); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px; font-size: 12px; color: var(--warn); line-height: 1.5; display: none; }
   .setup-banner.show { display: block; }
@@ -143,11 +149,7 @@
   .pstep.active .pstep-dot { background: var(--accent); }
   .pstep.done .pstep-dot { background: var(--success); }
 
-  /* OCR */
-  .ocr-result { display: none; margin-top: 10px; }
-  .ocr-result.show { display: block; }
-  .ocr-label { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; margin-bottom: 5px; text-transform: uppercase; }
-  .ocr-box { background: var(--bg); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 10px 12px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); line-height: 1.6; max-height: 100px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; }
+
 
   /* Toast */
   #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: #fff; padding: 10px 20px; border-radius: 40px; font-size: 13px; font-weight: 500; opacity: 0; transition: all 0.25s; z-index: 100; white-space: nowrap; pointer-events: none; max-width: 90vw; text-overflow: ellipsis; overflow: hidden; }
@@ -231,7 +233,7 @@
       </label>
     </div>
     <div class="ocr-result" id="ocrResult">
-      <div class="ocr-label">Extracted data</div>
+      <div class="ocr-label">Extracted text</div>
       <div class="ocr-box" id="ocrBox"></div>
     </div>
   </div>
@@ -318,6 +320,7 @@
       <div class="field"><label>Google Sheets ID</label><input type="text" id="cfSheetsId" placeholder="Paste your Sheet ID here"></div>
       <div class="field"><label>Anthropic API key (for OCR)</label><input type="password" id="cfApiKey" placeholder="sk-ant-..."></div>
 
+
       <div class="client-id-section">
         <div class="client-id-label">OAuth Client IDs (one-time setup)</div>
         <div class="field"><label>Azure Application (Client) ID</label><input type="text" id="cfMsClientId" placeholder="From Azure App Registration"></div>
@@ -345,6 +348,7 @@
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     <div class="progress-steps">
+
       <div class="pstep" id="ps1"><span class="pstep-dot"></span>Reading image with OCR</div>
       <div class="pstep" id="ps2"><span class="pstep-dot"></span>Uploading photo to OneDrive</div>
       <div class="pstep" id="ps3"><span class="pstep-dot"></span>Writing row to Google Sheets</div>
@@ -610,7 +614,6 @@ async function startCamera() {
 function capturePhoto() {
   const v = document.getElementById('videoEl');
   const c = document.createElement('canvas');
-  // Limit resolution to 1280px max to keep image size manageable for OCR
   const maxW = 1280;
   const scale = v.videoWidth > maxW ? maxW / v.videoWidth : 1;
   c.width = Math.round(v.videoWidth * scale);
@@ -663,8 +666,7 @@ function retakePhoto() {
   document.getElementById('retakeBtn').style.display = 'none';
   document.getElementById('startCamBtn').style.display = 'flex';
   document.getElementById('camPlaceholder').style.display = 'flex';
-  document.getElementById('ocrResult').classList.remove('show');
-  document.getElementById('ocrBox').textContent = '';
+
   stopStream();
 }
 function stopStream() {
@@ -679,18 +681,10 @@ function setStatus(s) {
   ['Good','Damaged','Pending'].forEach(x => { document.getElementById('sp-'+x).className = 'status-pill'+(x===s?' '+x.toLowerCase():''); });
 }
 
+
 // ── OCR ────────────────────────────────────────────────────────────────────
 async function runOCR(dataUrl, apiKey) {
   const base64 = dataUrl.split(',')[1];
-  const prompt = `Analyze this product image and extract the following information. Respond ONLY with a valid JSON object, no markdown, no explanation, no backticks. Use exactly these keys:
-{
-  "item_code": "the product/item code or SKU or model number visible in the image, or empty string if not found",
-  "description": "the product name or description visible in the image, or empty string if not found",
-  "price": "the price visible in the image including currency symbol, or empty string if not found",
-  "raw_text": "all other visible text in the image not captured above"
-}
-If multiple items are visible, extract the most prominent one. Return only the JSON object.`;
-
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
     headers:{
@@ -701,7 +695,7 @@ If multiple items are visible, extract the most prominent one. Return only the J
     },
     body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{ role:'user', content:[
       { type:'image', source:{ type:'base64', media_type:'image/jpeg', data:base64 } },
-      { type:'text', text:prompt }
+      { type:'text', text:'Extract ALL visible text from this image exactly as it appears. Return only the raw extracted text with no commentary.' }
     ]}]})
   });
   if (!resp.ok) {
@@ -709,21 +703,7 @@ If multiple items are visible, extract the most prominent one. Return only the J
     throw new Error('OCR failed: ' + (errData.error?.message || resp.status));
   }
   const data = await resp.json();
-  const rawText = data.content?.map(c=>c.text||'').join('') || '{}';
-  try {
-    // Strip any accidental markdown backticks
-    const clean = rawText.replace(/```json|```|`/g, '').trim();
-    const parsed = JSON.parse(clean);
-    return {
-      itemCode:    parsed.item_code    || '',
-      description: parsed.description  || '',
-      price:       parsed.price        || '',
-      rawText:     parsed.raw_text     || ''
-    };
-  } catch(e) {
-    // If JSON parse fails, return raw text in description
-    return { itemCode:'', description:'', price:'', rawText:rawText };
-  }
+  return data.content?.map(c=>c.text||'').join('') || '(no text found)';
 }
 
 // ── OneDrive ───────────────────────────────────────────────────────────────
@@ -742,12 +722,12 @@ async function uploadOneDrive(blob, filename, folderPath, token) {
 // ── Google Sheets ──────────────────────────────────────────────────────────
 async function appendSheets(values, sheetId, token) {
   // Use A:I range to append after last row with data
-  const range = encodeURIComponent('Sheet1!A:N');
+  const range = encodeURIComponent('Sheet1!A:K');
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
   const resp = await fetch(url, {
     method:'POST',
     headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' },
-    body: JSON.stringify({ range:'Sheet1!A:N', majorDimension:'ROWS', values:[values] })
+    body: JSON.stringify({ range:'Sheet1!A:K', majorDimension:'ROWS', values:[values] })
   });
   if (!resp.ok) {
     const errData = await resp.json().catch(()=>({}));
@@ -771,26 +751,15 @@ async function handleSubmit() {
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   document.getElementById('progressWrap').classList.add('show');
-  let ocrResult = { itemCode:'', description:'', price:'', rawText:'' };
-  let driveUrl = '';
+
+  let ocrText = '', driveUrl = '';
   const filename = `capture_${Date.now()}.jpg`;
   try {
     stepActive(1);
     try {
-      if (apiKey) {
-        ocrResult = await runOCR(capturedDataUrl, apiKey);
-        // Show extracted data in OCR preview box
-        const preview = [
-          ocrResult.itemCode    ? 'Item Code:   ' + ocrResult.itemCode    : '',
-          ocrResult.description ? 'Description: ' + ocrResult.description : '',
-          ocrResult.price       ? 'Price:       ' + ocrResult.price       : '',
-          ocrResult.rawText     ? 'Other text:  ' + ocrResult.rawText     : ''
-        ].filter(Boolean).join('
-');
-        document.getElementById('ocrBox').textContent = preview || '(no data extracted)';
-        document.getElementById('ocrResult').classList.add('show');
-      }
-    } catch(ocrErr) { ocrResult.rawText = '(OCR failed: '+ocrErr.message+')'; toast('OCR step failed: '+ocrErr.message, 'error', 5000); }
+      if (apiKey) { ocrText = await runOCR(capturedDataUrl, apiKey); document.getElementById('ocrBox').textContent = ocrText; document.getElementById('ocrResult').classList.add('show'); }
+      else ocrText = '(OCR skipped — no API key)';
+    } catch(ocrErr) { ocrText = '(OCR failed: '+ocrErr.message+')'; toast('OCR step failed: '+ocrErr.message, 'error', 5000); }
     stepActive(2);
     try {
       driveUrl = curMs ? await uploadOneDrive(capturedBlob, filename, folderPath, curMs) : '(not signed in to Microsoft)';
@@ -805,10 +774,7 @@ async function handleSubmit() {
       document.getElementById('fSupplier').value   || '',
       selectedStatus                               || '',
       document.getElementById('fRemarks').value    || '',
-      ocrResult.itemCode                           || '',
-      ocrResult.description                        || '',
-      ocrResult.price                              || '',
-      ocrResult.rawText                            || '',
+      ocrText                                      || '',
       driveUrl                                     || '',
       filename                                     || ''
     ];
