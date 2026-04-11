@@ -711,6 +711,9 @@ async function startCamera() {
     document.getElementById('captureBtn').style.display = 'flex';
     document.getElementById('startCamBtn').style.display = 'none';
     document.getElementById('retakeBtn').style.display = 'none';
+    // Clear OCR when starting fresh camera session
+    document.getElementById('ocrResult').classList.remove('show');
+    document.getElementById('ocrBox').textContent = '';
   } catch(e) { toast('Camera unavailable — use Upload instead.', 'error'); }
 }
 function capturePhoto() {
@@ -765,14 +768,17 @@ function showPreview(url) {
   document.getElementById('ocrResult').classList.remove('show');
   document.getElementById('ocrBox').textContent = '';
 }
-function retakePhoto() {
+function retakePhoto(clearOcr = true) {
   capturedBlob = null; capturedDataUrl = null;
   document.getElementById('previewImg').style.display = 'none';
   document.getElementById('retakeBtn').style.display = 'none';
   document.getElementById('startCamBtn').style.display = 'flex';
   document.getElementById('camPlaceholder').style.display = 'flex';
-  document.getElementById('ocrResult').classList.remove('show');
-  document.getElementById('ocrBox').textContent = '';
+  // Only clear OCR when manually retaking — not after submit
+  if (clearOcr) {
+    document.getElementById('ocrResult').classList.remove('show');
+    document.getElementById('ocrBox').textContent = '';
+  }
   stopStream();
 }
 function stopStream() {
@@ -1083,7 +1089,7 @@ async function handleSubmit() {
     setTimeout(() => {
       btn.disabled = false;
       document.getElementById('progressWrap').classList.remove('show');
-      retakePhoto();
+      retakePhoto(false); // keep OCR text visible after submit
       ['fQty','fRemarks','fSupplier'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('fLocation').selectedIndex = 0;
       document.getElementById('fZone').selectedIndex = 0;
