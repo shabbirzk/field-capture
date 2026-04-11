@@ -47,6 +47,31 @@
   .ocr-label { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; margin-bottom: 5px; text-transform: uppercase; }
   .ocr-box { background: var(--bg); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 10px 12px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); line-height: 1.6; max-height: 100px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; }
 
+  /* Entries log */
+  .entries-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 16px; margin-bottom: 12px; }
+  .entries-empty { font-size: 13px; color: var(--hint); text-align: center; padding: 16px 0; }
+  .entry-item { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 8px; position: relative; }
+  .entry-item:last-child { margin-bottom: 0; }
+  .entry-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .entry-title { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+  .entry-meta { font-size: 11px; color: var(--hint); margin-bottom: 6px; line-height: 1.5; }
+  .entry-actions { display: flex; gap: 6px; margin-top: 8px; }
+  .entry-btn { flex: 1; padding: 7px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; text-align: center; transition: all 0.15s; }
+  .entry-btn:active { transform: scale(0.97); }
+  .entry-btn.edit { border-color: rgba(0,120,212,0.25); color: #0078d4; background: rgba(0,120,212,0.05); }
+  .entry-btn.delete { border-color: rgba(192,57,43,0.25); color: var(--danger); background: var(--danger-light); }
+  .entry-status { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .entry-status.good { background: var(--success-light); color: var(--success); }
+  .entry-status.damaged { background: var(--danger-light); color: var(--danger); }
+  .entry-status.pending { background: var(--warn-light); color: var(--warn); }
+
+  /* Edit modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 50; align-items: flex-end; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; padding: 20px 16px; width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; }
+  .modal-title { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+
   /* Setup banner */
   .setup-banner { background: var(--warn-light); border: 1px solid rgba(180,83,9,0.2); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px; font-size: 12px; color: var(--warn); line-height: 1.5; display: none; }
   .setup-banner.show { display: block; }
@@ -356,6 +381,72 @@
     </div>
   </div>
 
+  <!-- Entries Log -->
+  <div class="entries-card" id="entriesCard" style="display:none;">
+    <div class="card-label">Recent entries</div>
+    <div id="entriesList"><div class="entries-empty">No entries yet</div></div>
+  </div>
+
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <div class="modal-title">Edit entry</div>
+    <input type="hidden" id="editRowIndex">
+    <div class="field"><label>Date &amp; Time</label><input type="datetime-local" id="editDateTime"></div>
+    <div class="field"><label>Quantity</label><input type="number" id="editQty" min="0"></div>
+    <div class="field">
+      <label>Location</label>
+      <select id="editLocation" style="width:100%;padding:10px 12px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;appearance:none;">
+        <option value="">-- Select location --</option>
+        <option value="WF MAKTOUM">WF MAKTOUM</option>
+        <option value="NATUZZI MAKTOUM">NATUZZI MAKTOUM</option>
+        <option value="NATUZZI SHEIKH ZAYED RD">NATUZZI SHEIKH ZAYED RD</option>
+        <option value="DUBAI HILLS MALL">DUBAI HILLS MALL</option>
+        <option value="ADH GALLERIA MALL">ADH GALLERIA MALL</option>
+        <option value="ADH YAS MALL">ADH YAS MALL</option>
+        <option value="WF BOUTIQUE">WF BOUTIQUE</option>
+        <option value="DIP WH">DIP WH</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Area</label>
+      <select id="editArea" style="width:100%;padding:10px 12px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;appearance:none;">
+        <option value="">-- Select area --</option>
+        <option value="Ground Floor">Ground Floor</option>
+        <option value="Mezzanine Floor">Mezzanine Floor</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Zone</label>
+      <select id="editZone" style="width:100%;padding:10px 12px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;appearance:none;">
+        <option value="">-- Select zone --</option>
+        <option>Zone A</option><option>Zone B</option><option>Zone C</option><option>Zone D</option>
+        <option>Zone E</option><option>Zone F</option><option>Zone G</option><option>Zone H</option>
+        <option>Zone I</option><option>Zone J</option><option>Zone K</option><option>Zone L</option>
+        <option>Zone M</option><option>Zone N</option><option>Zone O</option><option>Zone P</option>
+        <option>Zone Q</option><option>Zone R</option><option>Zone S</option><option>Zone T</option>
+        <option>Zone U</option><option>Zone V</option><option>Zone W</option><option>Zone X</option>
+        <option>Zone Y</option><option>Zone Z</option>
+      </select>
+    </div>
+    <div class="field"><label>Supplier / Vendor</label><input type="text" id="editSupplier"></div>
+    <div class="field">
+      <label>Status</label>
+      <select id="editStatus" style="width:100%;padding:10px 12px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;-webkit-appearance:none;appearance:none;">
+        <option value="">-- Select status --</option>
+        <option value="Good">Good</option>
+        <option value="Damaged">Damaged</option>
+        <option value="Pending">Pending</option>
+      </select>
+    </div>
+    <div class="field"><label>Remarks</label><textarea id="editRemarks" style="height:60px;resize:vertical;"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn primary" onclick="saveEdit()" style="flex:2;">Save changes</button>
+      <button class="btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -363,6 +454,7 @@
 <script>
 // ── State ──────────────────────────────────────────────────────────────────
 let stream = null, capturedBlob = null, capturedDataUrl = null, selectedStatus = '';
+let recentEntries = JSON.parse(localStorage.getItem('fc_entries') || '[]'); // persisted entries
 let msToken = null, msTokenExpiry = 0, gsToken = null, gsTokenExpiry = 0;
 const REDIRECT_URI = 'https://shabbirzk.github.io/field-capture/';
 
@@ -382,6 +474,7 @@ handleOAuthCallback();
 loadSettings(); // reload again after OAuth to restore any fields cleared by redirect
 updateAuthUI();
 updateTokenBanner();
+renderEntries(); // show persisted entries on startup
 setTimeout(() => { if (!msToken && !gsToken) document.getElementById('setupBanner').classList.add('show'); }, 400);
 
 // ── Toast ──────────────────────────────────────────────────────────────────
@@ -582,7 +675,9 @@ function loadSettings() {
 }
 function clearSettings() {
   if (!confirm('Clear all saved settings and sign out of all accounts?')) return;
-  ['fc_settings','fc_ms_token','fc_ms_expiry','fc_gs_token','fc_gs_expiry','fc_ms_client_id','fc_gs_client_id'].forEach(k => localStorage.removeItem(k));
+  ['fc_settings','fc_ms_token','fc_ms_expiry','fc_gs_token','fc_gs_expiry','fc_ms_client_id','fc_gs_client_id','fc_entries'].forEach(k => localStorage.removeItem(k));
+  recentEntries = [];
+  renderEntries();
   SFIELDS.forEach(id => { document.getElementById(id).value = ''; });
   msToken = null; gsToken = null; msTokenExpiry = 0; gsTokenExpiry = 0;
   updateAuthUI(); updateTokenBanner(); toast('All settings cleared.', '', 2000);
@@ -706,6 +801,128 @@ async function runOCR(dataUrl, apiKey) {
   return data.content?.map(c=>c.text||'').join('') || '(no text found)';
 }
 
+// ── Entries Log ───────────────────────────────────────────────────────────
+function saveEntries() {
+  localStorage.setItem('fc_entries', JSON.stringify(recentEntries));
+}
+
+function renderEntries() {
+  const list = document.getElementById('entriesList');
+  const card = document.getElementById('entriesCard');
+  saveEntries();
+  if (recentEntries.length === 0) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  list.innerHTML = recentEntries.map((e, i) => {
+    const statusCls = e.status ? e.status.toLowerCase() : '';
+    return `<div class="entry-item" id="entry-${i}">
+      <div class="entry-header">
+        <div class="entry-title">${e.location || 'No location'} ${e.area ? '· '+e.area : ''} ${e.zone ? '· '+e.zone : ''}</div>
+        ${e.status ? `<span class="entry-status ${statusCls}">${e.status}</span>` : ''}
+      </div>
+      <div class="entry-meta">
+        ${e.dateTime ? e.dateTime.replace('T',' ') : ''}${e.supplier ? ' · '+e.supplier : ''}${e.qty ? ' · Qty: '+e.qty : ''}
+        ${e.remarks ? '<br>'+e.remarks : ''}
+      </div>
+      <div class="entry-actions">
+        <button class="entry-btn edit" onclick="openEdit(${i})">Edit</button>
+        <button class="entry-btn delete" onclick="deleteEntry(${i})">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openEdit(i) {
+  const e = recentEntries[i];
+  document.getElementById('editRowIndex').value = i;
+  document.getElementById('editDateTime').value  = e.dateTime  || '';
+  document.getElementById('editQty').value       = e.qty       || '';
+  document.getElementById('editLocation').value  = e.location  || '';
+  document.getElementById('editArea').value      = e.area      || '';
+  document.getElementById('editZone').value      = e.zone      || '';
+  document.getElementById('editSupplier').value  = e.supplier  || '';
+  document.getElementById('editStatus').value    = e.status    || '';
+  document.getElementById('editRemarks').value   = e.remarks   || '';
+  document.getElementById('editModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('editModal').classList.remove('show');
+}
+
+async function saveEdit() {
+  const i = parseInt(document.getElementById('editRowIndex').value);
+  const e = recentEntries[i];
+  const saved = JSON.parse(localStorage.getItem('fc_settings') || '{}');
+  const sheetsId = document.getElementById('cfSheetsId').value.trim() || saved.cfSheetsId || '';
+  const curGs = gsToken && gsTokenExpiry > Date.now()+30000 ? gsToken : null;
+
+  // Update local entry
+  e.dateTime = document.getElementById('editDateTime').value;
+  e.qty      = document.getElementById('editQty').value;
+  e.location = document.getElementById('editLocation').value;
+  e.area     = document.getElementById('editArea').value;
+  e.zone     = document.getElementById('editZone').value;
+  e.supplier = document.getElementById('editSupplier').value;
+  e.status   = document.getElementById('editStatus').value;
+  e.remarks  = document.getElementById('editRemarks').value;
+
+  // Build updated row
+  const updatedRow = [e.dateTime, e.qty, e.location, e.area, e.zone, e.supplier, e.status, e.remarks, e.ocrText||'', e.driveUrl||'', e.filename||''];
+
+  if (!curGs || !sheetsId) {
+    toast('Please sign in to Google to save edits.', 'error', 4000);
+    closeModal(); renderEntries(); return;
+  }
+
+  try {
+    // Update the specific row in Google Sheets (row index + 2 for header + 1-based)
+    const rowNum = e.sheetRowNum;
+    const range = encodeURIComponent(`Sheet1!A${rowNum}:K${rowNum}`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetsId}/values/${range}?valueInputOption=USER_ENTERED`;
+    const resp = await fetch(url, {
+      method:'PUT',
+      headers:{ 'Authorization':'Bearer '+curGs, 'Content-Type':'application/json' },
+      body: JSON.stringify({ range:`Sheet1!A${rowNum}:K${rowNum}`, majorDimension:'ROWS', values:[updatedRow] })
+    });
+    if (!resp.ok) throw new Error('Update failed: '+resp.status);
+    toast('Entry updated successfully!', 'success', 3000);
+  } catch(err) {
+    toast('Update failed: '+err.message, 'error', 4000);
+  }
+  closeModal(); renderEntries();
+}
+
+async function deleteEntry(i) {
+  if (!confirm('Delete this entry from Google Sheets?')) return;
+  const e = recentEntries[i];
+  const saved = JSON.parse(localStorage.getItem('fc_settings') || '{}');
+  const sheetsId = document.getElementById('cfSheetsId').value.trim() || saved.cfSheetsId || '';
+  const curGs = gsToken && gsTokenExpiry > Date.now()+30000 ? gsToken : null;
+
+  if (!curGs || !sheetsId) {
+    toast('Please sign in to Google to delete entries.', 'error', 4000); return;
+  }
+
+  try {
+    // Clear the row content in Google Sheets
+    const rowNum = e.sheetRowNum;
+    const range = encodeURIComponent(`Sheet1!A${rowNum}:K${rowNum}`);
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetsId}/values/${range}?valueInputOption=USER_ENTERED`;
+    const resp = await fetch(url, {
+      method:'PUT',
+      headers:{ 'Authorization':'Bearer '+curGs, 'Content-Type':'application/json' },
+      body: JSON.stringify({ range:`Sheet1!A${rowNum}:K${rowNum}`, majorDimension:'ROWS', values:[['DELETED','','','','','','','','','','']] })
+    });
+    if (!resp.ok) throw new Error('Delete failed: '+resp.status);
+    recentEntries.splice(i, 1);
+    saveEntries();
+    toast('Entry deleted.', '', 2500);
+  } catch(err) {
+    toast('Delete failed: '+err.message, 'error', 4000);
+  }
+  renderEntries();
+}
+
 // ── OneDrive ───────────────────────────────────────────────────────────────
 async function uploadOneDrive(blob, filename, folderPath, token) {
   const path = encodeURIComponent(folderPath+'/'+filename);
@@ -788,6 +1005,26 @@ async function handleSubmit() {
     }
     stepActive(4); stepDone();
     toast('Entry submitted successfully!', 'success', 4000);
+
+    // Track entry locally for edit/delete
+    const entryData = {
+      dateTime: document.getElementById('fDateTime').value,
+      qty:      document.getElementById('fQty').value,
+      location: document.getElementById('fLocation').value,
+      area:     document.getElementById('fZone').value,
+      zone:     document.getElementById('fZoneCode').value,
+      supplier: document.getElementById('fSupplier').value,
+      status:   selectedStatus,
+      remarks:  document.getElementById('fRemarks').value,
+      ocrText:  ocrText,
+      driveUrl: driveUrl,
+      filename: filename,
+      sheetRowNum: recentEntries.length + 2 // row 1 is header, so first entry is row 2
+    };
+    recentEntries.unshift(entryData); // add to top of list
+    if (recentEntries.length > 10) recentEntries.pop(); // keep last 10 only
+    renderEntries();
+
     setTimeout(() => {
       btn.disabled = false;
       document.getElementById('progressWrap').classList.remove('show');
