@@ -754,6 +754,9 @@ function showPreview(url) {
   document.getElementById('captureBtn').style.display = 'none';
   document.getElementById('startCamBtn').style.display = 'none';
   document.getElementById('retakeBtn').style.display = 'flex';
+  // Always clear OCR box when a new photo is shown
+  document.getElementById('ocrResult').classList.remove('show');
+  document.getElementById('ocrBox').textContent = '';
 }
 function retakePhoto() {
   capturedBlob = null; capturedDataUrl = null;
@@ -761,7 +764,8 @@ function retakePhoto() {
   document.getElementById('retakeBtn').style.display = 'none';
   document.getElementById('startCamBtn').style.display = 'flex';
   document.getElementById('camPlaceholder').style.display = 'flex';
-
+  document.getElementById('ocrResult').classList.remove('show');
+  document.getElementById('ocrBox').textContent = '';
   stopStream();
 }
 function stopStream() {
