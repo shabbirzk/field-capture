@@ -442,6 +442,13 @@
       </select>
     </div>
     <div class="field"><label>Remarks</label><textarea id="editRemarks" style="height:60px;resize:vertical;"></textarea></div>
+    <div class="field" id="editOcrWrap" style="display:none;">
+      <label style="display:flex;align-items:center;gap:6px;">
+        <svg style="width:12px;height:12px;stroke:var(--accent);fill:none;stroke-width:2;" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.5"/><path d="M8 5V3h8v2"/></svg>
+        Extracted OCR text (read-only)
+      </label>
+      <div id="editOcrBox" style="margin-top:5px;background:var(--bg);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:10px 12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.6;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;"></div>
+    </div>
     <div class="modal-actions">
       <button class="btn primary" onclick="saveEdit()" style="flex:2;">Save changes</button>
       <button class="btn" onclick="closeModal()">Cancel</button>
@@ -880,6 +887,16 @@ function openEdit(i) {
   document.getElementById('editSupplier').value  = e.supplier  || '';
   document.getElementById('editStatus').value    = e.status    || '';
   document.getElementById('editRemarks').value   = e.remarks   || '';
+  // Show OCR text if available
+  const ocrWrap = document.getElementById('editOcrWrap');
+  const ocrBox  = document.getElementById('editOcrBox');
+  if (e.ocrText && e.ocrText.trim() && !e.ocrText.startsWith('(OCR skipped') && !e.ocrText.startsWith('(OCR failed')) {
+    ocrBox.textContent = e.ocrText;
+    ocrWrap.style.display = 'block';
+  } else {
+    ocrBox.textContent = '';
+    ocrWrap.style.display = 'none';
+  }
   document.getElementById('editModal').classList.add('show');
 }
 
