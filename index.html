@@ -998,10 +998,30 @@ async function uploadOneDrive(blob, filename, folderPath, token) {
 }
 
 // ── Google Sheets ──────────────────────────────────────────────────────────
+const SHEET_HEADERS = ['Date/Time','Quantity','Location','Area','Zone','Supplier','Status','Remarks','OCR Text','OneDrive URL','Filename'];
+
+async function ensureHeaders(sheetId, token) {
+  // Check if Row 1 has correct headers, if not write them
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A1:K1`;
+  const resp = await fetch(url, { headers:{ 'Authorization':'Bearer '+token } });
+  if (!resp.ok) return;
+  const data = await resp.json();
+  const existing = (data.values?.[0] || []).map(h => h.trim());
+  const needsHeaders = existing.length === 0 || existing[0] !== 'Date/Time';
+  if (needsHeaders) {
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A1:K1?valueInputOption=USER_ENTERED`, {
+      method:'PUT',
+      headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' },
+      body: JSON.stringify({ range:'Sheet1!A1:K1', majorDimension:'ROWS', values:[SHEET_HEADERS] })
+    });
+  }
+}
+
 async function appendSheets(values, sheetId, token) {
-  // Use A:I range to append after last row with data
-  const range = encodeURIComponent('Sheet1!A:K');
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+  // Ensure headers exist first
+  await ensureHeaders(sheetId, token);
+  // Always append starting from column A
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A:K:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
   const resp = await fetch(url, {
     method:'POST',
     headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' },
