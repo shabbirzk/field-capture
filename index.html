@@ -258,8 +258,13 @@
       </label>
     </div>
     <div class="ocr-result" id="ocrResult">
-      <div class="ocr-label">Extracted text</div>
-      <div class="ocr-box" id="ocrBox"></div>
+      <div class="ocr-label">Extracted data</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:var(--muted);min-width:90px;">Item Code</span><div class="ocr-box" id="ocrItemCode" style="flex:1;max-height:36px;"></div></div>
+        <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:var(--muted);min-width:90px;">Description</span><div class="ocr-box" id="ocrDescription" style="flex:1;max-height:36px;"></div></div>
+        <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:var(--muted);min-width:90px;">Price</span><div class="ocr-box" id="ocrPrice" style="flex:1;max-height:36px;"></div></div>
+        <div id="ocrRawWrap"><div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Other text</div><div class="ocr-box" id="ocrBox"></div></div>
+      </div>
     </div>
   </div>
 
@@ -443,11 +448,16 @@
     </div>
     <div class="field"><label>Remarks</label><textarea id="editRemarks" style="height:60px;resize:vertical;"></textarea></div>
     <div class="field" id="editOcrWrap" style="display:none;">
-      <label style="display:flex;align-items:center;gap:6px;">
+      <label style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
         <svg style="width:12px;height:12px;stroke:var(--accent);fill:none;stroke-width:2;" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.5"/><path d="M8 5V3h8v2"/></svg>
-        Extracted OCR text (read-only)
+        Extracted data (read-only)
       </label>
-      <div id="editOcrBox" style="margin-top:5px;background:var(--bg);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:10px 12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);line-height:1.6;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;"></div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:var(--muted);min-width:90px;">Item Code</span><div style="flex:1;background:var(--bg);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:7px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);" id="editOcrItemCode"></div></div>
+        <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:var(--muted);min-width:90px;">Description</span><div style="flex:1;background:var(--bg);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:7px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);" id="editOcrDescription"></div></div>
+        <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:var(--muted);min-width:90px;">Price</span><div style="flex:1;background:var(--bg);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:7px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text);" id="editOcrPrice"></div></div>
+        <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:var(--muted);min-width:90px;">Other text</span><div style="flex:1;background:var(--bg);border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:7px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);max-height:60px;overflow-y:auto;" id="editOcrBox"></div></div>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn primary" onclick="saveEdit()" style="flex:2;">Save changes</button>
@@ -767,6 +777,9 @@ function showPreview(url) {
   // Always clear OCR box when a new photo is shown
   document.getElementById('ocrResult').classList.remove('show');
   document.getElementById('ocrBox').textContent = '';
+  document.getElementById('ocrItemCode').textContent = '';
+  document.getElementById('ocrDescription').textContent = '';
+  document.getElementById('ocrPrice').textContent = '';
 }
 function retakePhoto(clearOcr = true) {
   capturedBlob = null; capturedDataUrl = null;
@@ -797,6 +810,13 @@ function setStatus(s) {
 // ── OCR ────────────────────────────────────────────────────────────────────
 async function runOCR(dataUrl, apiKey) {
   const base64 = dataUrl.split(',')[1];
+  const prompt = `Analyze this product/label image and extract structured data. Respond ONLY with a valid JSON object, no markdown, no explanation:
+{
+  "item_code": "product code, SKU, model number, or barcode number visible in the image, empty string if not found",
+  "description": "product name or description visible in the image, empty string if not found",
+  "price": "price with currency symbol visible in the image, empty string if not found",
+  "other_text": "all other visible text not captured above, empty string if none"
+}`;
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
     headers:{
@@ -807,7 +827,7 @@ async function runOCR(dataUrl, apiKey) {
     },
     body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{ role:'user', content:[
       { type:'image', source:{ type:'base64', media_type:'image/jpeg', data:base64 } },
-      { type:'text', text:'Extract ALL visible text from this image exactly as it appears. Return only the raw extracted text with no commentary.' }
+      { type:'text', text:prompt }
     ]}]})
   });
   if (!resp.ok) {
@@ -815,7 +835,14 @@ async function runOCR(dataUrl, apiKey) {
     throw new Error('OCR failed: ' + (errData.error?.message || resp.status));
   }
   const data = await resp.json();
-  return data.content?.map(c=>c.text||'').join('') || '(no text found)';
+  const raw = data.content?.map(c=>c.text||'').join('') || '{}';
+  try {
+    const clean = raw.replace(/```json|```|`/g, '').trim();
+    const p = JSON.parse(clean);
+    return { itemCode: p.item_code||'', description: p.description||'', price: p.price||'', otherText: p.other_text||'' };
+  } catch(e) {
+    return { itemCode:'', description:'', price:'', otherText: raw };
+  }
 }
 
 // ── Entries Log ───────────────────────────────────────────────────────────
@@ -876,7 +903,6 @@ function renderEntries() {
       </div>
       <div class="entry-actions">
         <button class="entry-btn edit" onclick="openEdit(${i})">Edit</button>
-        <button class="entry-btn delete" onclick="deleteEntry(${i})">Delete</button>
       </div>
     </div>`;
   }).join('');
@@ -893,14 +919,16 @@ function openEdit(i) {
   document.getElementById('editSupplier').value  = e.supplier  || '';
   document.getElementById('editStatus').value    = e.status    || '';
   document.getElementById('editRemarks').value   = e.remarks   || '';
-  // Show OCR text if available
+  // Show OCR extracted fields if available
   const ocrWrap = document.getElementById('editOcrWrap');
-  const ocrBox  = document.getElementById('editOcrBox');
-  if (e.ocrText && e.ocrText.trim() && !e.ocrText.startsWith('(OCR skipped') && !e.ocrText.startsWith('(OCR failed')) {
-    ocrBox.textContent = e.ocrText;
+  const hasOcr = e.itemCode || e.description || e.price || e.otherText;
+  if (hasOcr) {
+    document.getElementById('editOcrItemCode').textContent   = e.itemCode    || '';
+    document.getElementById('editOcrDescription').textContent = e.description || '';
+    document.getElementById('editOcrPrice').textContent      = e.price       || '';
+    document.getElementById('editOcrBox').textContent        = e.otherText   || '';
     ocrWrap.style.display = 'block';
   } else {
-    ocrBox.textContent = '';
     ocrWrap.style.display = 'none';
   }
   document.getElementById('editModal').classList.add('show');
@@ -928,7 +956,7 @@ async function saveEdit() {
   e.remarks  = document.getElementById('editRemarks').value;
 
   // Build updated row
-  const updatedRow = [e.dateTime, e.qty, e.location, e.area, e.zone, e.supplier, e.status, e.remarks, e.ocrText||'', e.driveUrl||'', e.filename||''];
+  const updatedRow = [e.dateTime, e.qty, e.location, e.area, e.zone, e.supplier, e.status, e.remarks, e.itemCode||'', e.description||'', e.price||'', e.otherText||'', e.driveUrl||'', e.filename||''];
 
   if (!curGs || !sheetsId) {
     toast('Please sign in to Google to save edits.', 'error', 4000);
@@ -938,12 +966,12 @@ async function saveEdit() {
   try {
     // Update the specific row in Google Sheets (row index + 2 for header + 1-based)
     const rowNum = e.sheetRowNum;
-    const range = encodeURIComponent(`Sheet1!A${rowNum}:K${rowNum}`);
+    const range = encodeURIComponent(`Sheet1!A${rowNum}:N${rowNum}`);
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetsId}/values/${range}?valueInputOption=USER_ENTERED`;
     const resp = await fetch(url, {
       method:'PUT',
       headers:{ 'Authorization':'Bearer '+curGs, 'Content-Type':'application/json' },
-      body: JSON.stringify({ range:`Sheet1!A${rowNum}:K${rowNum}`, majorDimension:'ROWS', values:[updatedRow] })
+      body: JSON.stringify({ range:`Sheet1!A${rowNum}:N${rowNum}`, majorDimension:'ROWS', values:[updatedRow] })
     });
     if (!resp.ok) throw new Error('Update failed: '+resp.status);
     toast('Entry updated successfully!', 'success', 3000);
@@ -967,12 +995,12 @@ async function deleteEntry(i) {
   try {
     // Clear the row content in Google Sheets
     const rowNum = e.sheetRowNum;
-    const range = encodeURIComponent(`Sheet1!A${rowNum}:K${rowNum}`);
+    const range = encodeURIComponent(`Sheet1!A${rowNum}:N${rowNum}`);
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetsId}/values/${range}?valueInputOption=USER_ENTERED`;
     const resp = await fetch(url, {
       method:'PUT',
       headers:{ 'Authorization':'Bearer '+curGs, 'Content-Type':'application/json' },
-      body: JSON.stringify({ range:`Sheet1!A${rowNum}:K${rowNum}`, majorDimension:'ROWS', values:[['DELETED','','','','','','','','','','']] })
+      body: JSON.stringify({ range:`Sheet1!A${rowNum}:N${rowNum}`, majorDimension:'ROWS', values:[['DELETED','','','','','','','','','','','','','']] })
     });
     if (!resp.ok) throw new Error('Delete failed: '+resp.status);
     recentEntries.splice(i, 1);
@@ -998,21 +1026,21 @@ async function uploadOneDrive(blob, filename, folderPath, token) {
 }
 
 // ── Google Sheets ──────────────────────────────────────────────────────────
-const SHEET_HEADERS = ['Date/Time','Quantity','Location','Area','Zone','Supplier','Status','Remarks','OCR Text','OneDrive URL','Filename'];
+const SHEET_HEADERS = ['Date/Time','Quantity','Location','Area','Zone','Supplier','Status','Remarks','Item Code','Description','Price','Other Text','OneDrive URL','Filename'];
 
 async function ensureHeaders(sheetId, token) {
   // Check if Row 1 has correct headers, if not write them
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A1:K1`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A1:N1`;
   const resp = await fetch(url, { headers:{ 'Authorization':'Bearer '+token } });
   if (!resp.ok) return;
   const data = await resp.json();
   const existing = (data.values?.[0] || []).map(h => h.trim());
   const needsHeaders = existing.length === 0 || existing[0] !== 'Date/Time';
   if (needsHeaders) {
-    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A1:K1?valueInputOption=USER_ENTERED`, {
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A1:N1?valueInputOption=USER_ENTERED`, {
       method:'PUT',
       headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' },
-      body: JSON.stringify({ range:'Sheet1!A1:K1', majorDimension:'ROWS', values:[SHEET_HEADERS] })
+      body: JSON.stringify({ range:'Sheet1!A1:N1', majorDimension:'ROWS', values:[SHEET_HEADERS] })
     });
   }
 }
@@ -1021,11 +1049,11 @@ async function appendSheets(values, sheetId, token) {
   // Ensure headers exist first
   await ensureHeaders(sheetId, token);
   // Always append starting from column A
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A:K:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A:N:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
   const resp = await fetch(url, {
     method:'POST',
     headers:{ 'Authorization':'Bearer '+token, 'Content-Type':'application/json' },
-    body: JSON.stringify({ range:'Sheet1!A:K', majorDimension:'ROWS', values:[values] })
+    body: JSON.stringify({ range:'Sheet1!A:N', majorDimension:'ROWS', values:[values] })
   });
   if (!resp.ok) {
     const errData = await resp.json().catch(()=>({}));
@@ -1050,14 +1078,20 @@ async function handleSubmit() {
   btn.disabled = true;
   document.getElementById('progressWrap').classList.add('show');
 
-  let ocrText = '', driveUrl = '';
+  let ocrResult = { itemCode:'', description:'', price:'', otherText:'' }, driveUrl = '';
   const filename = `capture_${Date.now()}.jpg`;
   try {
     stepActive(1);
     try {
-      if (apiKey) { ocrText = await runOCR(capturedDataUrl, apiKey); document.getElementById('ocrBox').textContent = ocrText; document.getElementById('ocrResult').classList.add('show'); }
-      else ocrText = '(OCR skipped — no API key)';
-    } catch(ocrErr) { ocrText = '(OCR failed: '+ocrErr.message+')'; toast('OCR step failed: '+ocrErr.message, 'error', 5000); }
+      if (apiKey) {
+        ocrResult = await runOCR(capturedDataUrl, apiKey);
+        document.getElementById('ocrItemCode').textContent   = ocrResult.itemCode   || '';
+        document.getElementById('ocrDescription').textContent = ocrResult.description || '';
+        document.getElementById('ocrPrice').textContent      = ocrResult.price      || '';
+        document.getElementById('ocrBox').textContent        = ocrResult.otherText  || '';
+        document.getElementById('ocrResult').classList.add('show');
+      }
+    } catch(ocrErr) { ocrResult.otherText = '(OCR failed: '+ocrErr.message+')'; toast('OCR step failed: '+ocrErr.message, 'error', 5000); }
     stepActive(2);
     try {
       driveUrl = curMs ? await uploadOneDrive(capturedBlob, filename, folderPath, curMs) : '(not signed in to Microsoft)';
@@ -1072,7 +1106,10 @@ async function handleSubmit() {
       document.getElementById('fSupplier').value   || '',
       selectedStatus                               || '',
       document.getElementById('fRemarks').value    || '',
-      ocrText                                      || '',
+      ocrResult.itemCode                           || '',
+      ocrResult.description                        || '',
+      ocrResult.price                              || '',
+      ocrResult.otherText                          || '',
       driveUrl                                     || '',
       filename                                     || ''
     ];
@@ -1097,7 +1134,10 @@ async function handleSubmit() {
       supplier: document.getElementById('fSupplier').value,
       status:   selectedStatus,
       remarks:  document.getElementById('fRemarks').value,
-      ocrText:  ocrText,
+      itemCode:    ocrResult.itemCode    || '',
+      description: ocrResult.description || '',
+      price:       ocrResult.price       || '',
+      otherText:   ocrResult.otherText   || '',
       driveUrl: driveUrl,
       filename: filename,
       sheetRowNum: recentEntries.length + 2 // row 1 is header, so first entry is row 2
