@@ -822,23 +822,24 @@ function setStatus(s) {
 // ── OCR ────────────────────────────────────────────────────────────────────
 async function runOCR(dataUrl, apiKey) {
   const base64 = dataUrl.split(',')[1];
-  const prompt = `Analyze this product/label image and extract structured data. Respond ONLY with a valid JSON object, no markdown, no explanation.
+  const prompt = `You are a barcode and product label scanner. Extract text from this image with PIXEL-PERFECT accuracy.
 
-CRITICAL RULES for text extraction:
-- Copy characters EXACTLY as they visually appear in the image
-- Do NOT correct or interpret characters — preserve them literally
-- The letter O must stay as O, never convert to digit 0
-- The letter S must stay as S, never convert to digit 5
-- The letter I must stay as I, never convert to digit 1
-- The letter B must stay as B, never convert to digit 8
-- The letter Z must stay as Z, never convert to digit 2
-- If unsure between a letter and digit, prefer the letter for item codes
-- Preserve hyphens, slashes, dots exactly as shown
+ABSOLUTE RULES — no exceptions:
+- Transcribe every character EXACTLY as printed. Do NOT guess, correct, or interpret.
+- If a character has a SLASH through the middle or looks like a zero with a slash (0), write 0 (digit zero)
+- If a character is a round closed loop with no slash, it could be O (letter) or 0 (digit) — look at the surrounding characters for context (letters around it = O, digits around it = 0)
+- Z is Z (two horizontal lines connected by a diagonal). Never change Z to 2.
+- S is S (curved). Never change S to 5.
+- The digit 0 (zero) is 0. Never change 0 to O.
+- Do NOT normalize, autocorrect, or second-guess any character
+- Preserve ALL hyphens, dots, slashes, spaces exactly as shown
+- Mixed alphanumeric codes like "AB0123" or "S0Z-456" must be copied character by character
 
+Respond ONLY with this JSON, no markdown, no explanation:
 {
-  "item_code": "product code, SKU, model number, or barcode number visible in the image — copy character by character exactly as shown, empty string if not found",
-  "description": "product name or description visible in the image, empty string if not found",
-  "price": "price with currency symbol visible in the image, empty string if not found",
+  "item_code": "the exact product/SKU/model code character by character as printed",
+  "description": "product name or description exactly as printed, empty string if not found",
+  "price": "price with currency symbol exactly as printed, empty string if not found",
   "other_text": "all other visible text not captured above, empty string if none"
 }`;
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
