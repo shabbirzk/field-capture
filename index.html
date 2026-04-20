@@ -822,28 +822,9 @@ function setStatus(s) {
 // ── OCR ────────────────────────────────────────────────────────────────────
 async function runOCR(dataUrl, apiKey) {
   const base64 = dataUrl.split(',')[1];
-  const prompt = `You are a product label scanner. Your only job is to read text EXACTLY as it appears — character by character, no changes.
 
-STRICT RULES:
-- Copy the FULL item code including ALL prefixes, hyphens, and leading zeros
-- Example: if label shows "NZ-E044-0015" copy it as "NZ-E044-0015" — do NOT drop "NZ-" prefix, do NOT drop leading zeros
-- Leading zeros like "0015" must stay as "0015" — never shorten to "15"
-- Hyphens in codes like "NZ-E044-0015" must be preserved exactly
-- The item code starts from the very first character of the code — never skip any prefix letters or numbers
-- 0 (zero) stays as 0. O (letter O) stays as O. Use surrounding characters as context.
-- Z stays as Z. S stays as S. Never substitute digits for letters or vice versa.
-- Do NOT skip, shorten, abbreviate or clean up any part of the code
-
-For item_code: look for labels saying "ITEM CODE", "PART NO", "MODEL", "REF", "SKU" — copy the full value after that label including all characters from start to end.
-
-Respond ONLY with this JSON, no markdown, no explanation:
-{
-  "item_code": "the COMPLETE code exactly as printed including all prefixes and leading zeros",
-  "description": "product name or description exactly as printed, empty string if not found",
-  "price": "price with currency symbol exactly as printed, empty string if not found",
-  "other_text": "copy ALL remaining visible text from the entire label exactly as printed — every line, every word, every number that was not already captured in item_code, description or price. Do not summarize or shorten. Include field labels like SIZE, FINISH, BASE, TOP and their values."
-}`;
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+  // STEP 1 — Extract ALL raw text from the image first
+  const rawResp = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
     headers:{
       'Content-Type':'application/json',
@@ -853,21 +834,65 @@ Respond ONLY with this JSON, no markdown, no explanation:
     },
     body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:2000, messages:[{ role:'user', content:[
       { type:'image', source:{ type:'base64', media_type:'image/jpeg', data:base64 } },
-      { type:'text', text:prompt }
+      { type:'text', text:`Read every single character visible in this image and output them exactly as they appear. 
+Do not skip anything. Do not interpret or correct anything.
+Output the raw text only, line by line exactly as it appears on the label.` }
     ]}]})
   });
-  if (!resp.ok) {
-    const errData = await resp.json().catch(()=>({}));
-    throw new Error('OCR failed: ' + (errData.error?.message || resp.status));
+  if (!rawResp.ok) {
+    const errData = await rawResp.json().catch(()=>({}));
+    throw new Error('OCR failed: ' + (errData.error?.message || rawResp.status));
   }
-  const data = await resp.json();
-  const raw = data.content?.map(c=>c.text||'').join('') || '{}';
+  const rawData = await rawResp.json();
+  const rawText = rawData.content?.map(c=>c.text||'').join('') || '';
+
+  // STEP 2 — Parse the structured fields from the raw text
+  const parseResp = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':apiKey,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:2000, messages:[{ role:'user', content:[
+      { type:'text', text:`From this raw label text, extract the structured fields below.
+IMPORTANT: Copy values EXACTLY from the raw text — do not change any characters.
+
+Raw text:
+${rawText}
+
+Rules:
+- item_code: find the value after "ITEM CODE:", "PART NO.", "MODEL:", "REF:", "SKU:" — copy it character by character including all hyphens and leading zeros
+- description: the product brand and name (e.g. "NATUZZI ITALIA")
+- price: any price with currency symbol, empty string if none
+- other_text: paste the COMPLETE raw text above exactly as given
+
+Respond ONLY with this JSON, no markdown:
+{
+  "item_code": "",
+  "description": "",
+  "price": "",
+  "other_text": ""
+}` }
+    ]}]})
+  });
+  if (!parseResp.ok) {
+    return { itemCode:'', description:'', price:'', otherText: rawText };
+  }
+  const parseData = await parseResp.json();
+  const parseRaw = parseData.content?.map(c=>c.text||'').join('') || '{}';
   try {
-    const clean = raw.replace(/```json|```|`/g, '').trim();
+    const clean = parseRaw.replace(/```json|```|`/g, '').trim();
     const p = JSON.parse(clean);
-    return { itemCode: p.item_code||'', description: p.description||'', price: p.price||'', otherText: p.other_text||'' };
+    return {
+      itemCode:    p.item_code    || '',
+      description: p.description  || '',
+      price:       p.price        || '',
+      otherText:   rawText        // always use the original raw text for other_text
+    };
   } catch(e) {
-    return { itemCode:'', description:'', price:'', otherText: raw };
+    return { itemCode:'', description:'', price:'', otherText: rawText };
   }
 }
 
