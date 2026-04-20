@@ -857,16 +857,16 @@ Output the raw text only, line by line exactly as it appears on the label.` }
     },
     body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:2000, messages:[{ role:'user', content:[
       { type:'text', text:`From this raw label text, extract the structured fields below.
-IMPORTANT: Copy values EXACTLY from the raw text — do not change any characters.
+IMPORTANT: Copy values EXACTLY from the raw text — do not change any single character.
 
 Raw text:
 ${rawText}
 
-Rules:
-- item_code: find the value after "ITEM CODE:", "PART NO.", "MODEL:", "REF:", "SKU:" — copy it character by character including all hyphens and leading zeros
-- description: the product brand and name (e.g. "NATUZZI ITALIA")
-- price: any price with currency symbol, empty string if none
-- other_text: paste the COMPLETE raw text above exactly as given
+Rules for extraction:
+- item_code: The primary product reference code. Look for patterns like "XX-XXXX-XXXX" (letters-digits-digits with hyphens). It is usually the first or most prominent code on the label. Copy it completely including all letters, digits and hyphens. Do NOT drop any prefix letters.
+- description: The product name or description line. Usually describes what the item is (e.g. "ACCESSORIES MIRROR 6.5X20 H40 OVAL MARBLE"). Copy exactly as shown.
+- price: Any price value with currency. Look for AED, USD, EUR, GBP or any currency symbol followed by a number. Include "VAT INC." or similar if shown next to the price. Copy exactly.
+- other_text: Paste the COMPLETE raw text exactly as given above — every single line unchanged.
 
 Respond ONLY with this JSON, no markdown:
 {
