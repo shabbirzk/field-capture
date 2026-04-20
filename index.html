@@ -822,25 +822,26 @@ function setStatus(s) {
 // ── OCR ────────────────────────────────────────────────────────────────────
 async function runOCR(dataUrl, apiKey) {
   const base64 = dataUrl.split(',')[1];
-  const prompt = `You are a barcode and product label scanner. Extract text from this image with PIXEL-PERFECT accuracy.
+  const prompt = `You are a product label scanner. Your only job is to read text EXACTLY as it appears — character by character, no changes.
 
-ABSOLUTE RULES — no exceptions:
-- Transcribe every character EXACTLY as printed. Do NOT guess, correct, or interpret.
-- If a character has a SLASH through the middle or looks like a zero with a slash (0), write 0 (digit zero)
-- If a character is a round closed loop with no slash, it could be O (letter) or 0 (digit) — look at the surrounding characters for context (letters around it = O, digits around it = 0)
-- Z is Z (two horizontal lines connected by a diagonal). Never change Z to 2.
-- S is S (curved). Never change S to 5.
-- The digit 0 (zero) is 0. Never change 0 to O.
-- Do NOT normalize, autocorrect, or second-guess any character
-- Preserve ALL hyphens, dots, slashes, spaces exactly as shown
-- Mixed alphanumeric codes like "AB0123" or "S0Z-456" must be copied character by character
+STRICT RULES:
+- Copy the FULL item code including ALL prefixes, hyphens, and leading zeros
+- Example: if label shows "NZ-E044-0015" copy it as "NZ-E044-0015" — do NOT drop "NZ-" prefix, do NOT drop leading zeros
+- Leading zeros like "0015" must stay as "0015" — never shorten to "15"
+- Hyphens in codes like "NZ-E044-0015" must be preserved exactly
+- The item code starts from the very first character of the code — never skip any prefix letters or numbers
+- 0 (zero) stays as 0. O (letter O) stays as O. Use surrounding characters as context.
+- Z stays as Z. S stays as S. Never substitute digits for letters or vice versa.
+- Do NOT skip, shorten, abbreviate or clean up any part of the code
+
+For item_code: look for labels saying "ITEM CODE", "PART NO", "MODEL", "REF", "SKU" — copy the full value after that label including all characters from start to end.
 
 Respond ONLY with this JSON, no markdown, no explanation:
 {
-  "item_code": "the exact product/SKU/model code character by character as printed",
+  "item_code": "the COMPLETE code exactly as printed including all prefixes and leading zeros",
   "description": "product name or description exactly as printed, empty string if not found",
   "price": "price with currency symbol exactly as printed, empty string if not found",
-  "other_text": "all other visible text not captured above, empty string if none"
+  "other_text": "copy ALL remaining visible text from the entire label exactly as printed — every line, every word, every number that was not already captured in item_code, description or price. Do not summarize or shorten. Include field labels like SIZE, FINISH, BASE, TOP and their values."
 }`;
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
@@ -850,7 +851,7 @@ Respond ONLY with this JSON, no markdown, no explanation:
       'anthropic-version':'2023-06-01',
       'anthropic-dangerous-direct-browser-access':'true'
     },
-    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages:[{ role:'user', content:[
+    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:2000, messages:[{ role:'user', content:[
       { type:'image', source:{ type:'base64', media_type:'image/jpeg', data:base64 } },
       { type:'text', text:prompt }
     ]}]})
